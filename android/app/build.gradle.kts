@@ -6,16 +6,14 @@ plugins {
 
 android {
     namespace = "com.pesatrack.app"
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.pesatrack.app"
         minSdk = 29
         targetSdk = 36
+
         versionCode = 1
         versionName = "1.0"
 
@@ -24,18 +22,20 @@ android {
 
     buildTypes {
         release {
-            optimization {
-                enable = false
-            }
+            isMinifyEnabled = false
+
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-    kotlin {
-        jvmToolchain(21)
-    }
+
     buildFeatures {
         compose = true
     }
