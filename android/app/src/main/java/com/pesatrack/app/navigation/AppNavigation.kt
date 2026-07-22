@@ -14,14 +14,14 @@ fun AppNavigation() {
 
     NavHost(
         navController = navController,
-        startDestination = Destinations.SPLASH
+        startDestination = Screen.Splash.route
     ) {
 
-        composable(Destinations.SPLASH) {
-            SplashScreen()
+        composable(Screen.Splash.route) {
+            SplashScreen(navController)
         }
 
-        composable(Destinations.DASHBOARD) {
+        composable(Screen.Dashboard.route) {
             DashboardScreen()
         }
     }
