@@ -5,11 +5,10 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.pesatrack.app.data.database.converters.Converters
 import com.pesatrack.app.data.database.dao.TransactionDao
+import com.pesatrack.app.data.database.entity.TransactionEntity
 
 @Database(
-    entities = [
-        `TransactionEntity.kt`::class
-    ],
+    entities = [TransactionEntity::class],
     version = 1,
     exportSchema = true
 )

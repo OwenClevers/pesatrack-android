@@ -10,21 +10,21 @@ import kotlinx.coroutines.flow.Flow
 interface TransactionDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(transaction: `TransactionEntity.kt`)
+    suspend fun insert(transaction: TransactionEntity)
 
     @Query("""
         SELECT *
         FROM transactions
         ORDER BY transactionDate DESC
     """)
-    fun getTransactions(): Flow<List<`TransactionEntity.kt`>>
+    fun getTransactions(): Flow<List<TransactionEntity>>
 
     @Query("""
         SELECT *
         FROM transactions
         LIMIT 1
     """)
-    suspend fun getLatestTransaction(): `TransactionEntity.kt`?
+    suspend fun getLatestTransaction(): TransactionEntity?
 
     @Query("""
         DELETE FROM transactions
