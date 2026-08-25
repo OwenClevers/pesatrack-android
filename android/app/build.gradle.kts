@@ -47,6 +47,14 @@ ksp {
 }
 
 dependencies {
+    constraints {
+        implementation("androidx.core:core:1.15.0") {
+            because("1.16+ requires compileSdk 37 and AGP 9.1.0; toolchain is pinned at 36 / 8.10.1")
+        }
+        implementation("androidx.core:core-ktx:1.15.0") {
+            because("1.16+ requires compileSdk 37 and AGP 9.1.0; toolchain is pinned at 36 / 8.10.1")
+        }
+    }
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
@@ -58,6 +66,8 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.compose.material.icons.extended)
     ksp(libs.androidx.room.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
