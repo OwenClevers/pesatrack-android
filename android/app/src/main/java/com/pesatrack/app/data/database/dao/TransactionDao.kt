@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
+import com.pesatrack.app.data.database.entity.TransactionEntity
 
 @Dao
 interface TransactionDao {
