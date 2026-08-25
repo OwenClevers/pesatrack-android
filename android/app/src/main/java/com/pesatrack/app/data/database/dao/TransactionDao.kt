@@ -23,6 +23,7 @@ interface TransactionDao {
     @Query("""
         SELECT *
         FROM transactions
+        ORDER BY transactionDate DESC
         LIMIT 1
     """)
     suspend fun getLatestTransaction(): TransactionEntity?
