@@ -42,6 +42,7 @@ import com.pesatrack.app.ui.theme.Background
 import com.pesatrack.app.ui.theme.Divider
 import com.pesatrack.app.ui.theme.LocalDarkModeController
 import com.pesatrack.app.ui.theme.PrimaryDark
+import com.pesatrack.app.ui.theme.StatusBarIcons
 import com.pesatrack.app.ui.theme.Surface
 import com.pesatrack.app.ui.theme.TextPrimary
 import com.pesatrack.app.ui.theme.TextSecondary
@@ -52,6 +53,8 @@ import com.pesatrack.app.ui.theme.components.PesaBottomBar
 fun SettingsScreen(navController: NavController) {
     var showAbout by remember { mutableStateOf(false) }
     val darkModeController = LocalDarkModeController.current
+
+    StatusBarIcons(darkIcons = false)
 
     Scaffold(
         bottomBar = { PesaBottomBar(navController) },

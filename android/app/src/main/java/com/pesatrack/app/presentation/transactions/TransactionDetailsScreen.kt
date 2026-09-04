@@ -63,6 +63,7 @@ import com.pesatrack.app.ui.theme.Income
 import com.pesatrack.app.ui.theme.LocalPesaTrackColors
 import com.pesatrack.app.ui.theme.Primary
 import com.pesatrack.app.ui.theme.PrimaryDark
+import com.pesatrack.app.ui.theme.StatusBarIcons
 import com.pesatrack.app.ui.theme.Surface
 import com.pesatrack.app.ui.theme.TextPrimary
 import com.pesatrack.app.ui.theme.TextSecondary
@@ -84,6 +85,8 @@ fun TransactionDetailsScreen(navController: NavController, transactionId: Long) 
     )
     val uiState by viewModel.uiState.collectAsState()
     var showDeleteConfirm by remember { mutableStateOf(false) }
+
+    StatusBarIcons(darkIcons = false)
 
     LaunchedEffect(uiState.transaction, uiState.isLoading) {
         if (!uiState.isLoading && uiState.transaction == null) {

@@ -30,6 +30,7 @@ import com.pesatrack.app.navigation.Screen
 import com.pesatrack.app.ui.theme.Background
 import com.pesatrack.app.ui.theme.Divider
 import com.pesatrack.app.ui.theme.PrimaryDark
+import com.pesatrack.app.ui.theme.StatusBarIcons
 import com.pesatrack.app.ui.theme.Surface
 import com.pesatrack.app.ui.theme.components.EmptyState
 import com.pesatrack.app.ui.theme.components.MoneyCard
@@ -48,7 +49,15 @@ fun DashboardScreen(navController: NavController) {
     )
     val uiState by viewModel.uiState.collectAsState()
 
+    StatusBarIcons(darkIcons = false)
+
     Scaffold(
+        // Dashboard has no topBar/TopAppBar to bleed its own background behind
+        // the status bar (unlike screens with a real TopAppBar, which do this
+        // automatically), so Scaffold's own containerColor has to match the
+        // green header drawn just below it -- otherwise edge-to-edge leaves a
+        // mismatched strip showing through behind the status bar icons.
+        containerColor = PrimaryDark,
         bottomBar = { PesaBottomBar(navController) }
     ) { paddingValues ->
         Column(

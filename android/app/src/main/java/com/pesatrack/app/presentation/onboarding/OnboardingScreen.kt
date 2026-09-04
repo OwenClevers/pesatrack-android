@@ -42,6 +42,7 @@ import com.pesatrack.app.ui.theme.OnboardingArtBackgroundDark
 import com.pesatrack.app.ui.theme.OnboardingDotInactive
 import com.pesatrack.app.ui.theme.OnboardingDotInactiveDark
 import com.pesatrack.app.ui.theme.Primary
+import com.pesatrack.app.ui.theme.StatusBarIcons
 import com.pesatrack.app.ui.theme.Surface
 import com.pesatrack.app.ui.theme.TextPrimary
 import com.pesatrack.app.ui.theme.TextSecondary
@@ -76,6 +77,11 @@ fun OnboardingScreen(navController: NavController) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = { onboardingPages.size })
+
+    // Unlike every other screen, Onboarding's background is the plain adaptive
+    // Surface color rather than a PrimaryDark bar, so its status bar icons need
+    // to flip with the theme instead of always being light.
+    StatusBarIcons(darkIcons = !LocalPesaTrackColors.current.isDark)
 
     fun completeOnboarding() {
         OnboardingPreferences.setSeenOnboarding(context)

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -63,9 +64,13 @@ fun PesaBottomBar(
         Column {
             HorizontalDivider(color = Divider)
             Surface(color = SurfaceColor) {
+                // navigationBarsPadding() before height() so the inset adds to the
+                // bar's total height (background bleeds behind the gesture/button
+                // nav bar) instead of shrinking the 64dp content area into it.
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .navigationBarsPadding()
                         .height(64.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceAround
