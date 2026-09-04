@@ -22,7 +22,8 @@ data class AddTransactionUiState(
     val time: LocalTime = LocalTime.now(),
     val createdAt: LocalDateTime? = null,
     val source: TransactionSource = TransactionSource.MANUAL,
-    val pendingCategoryId: Long? = null
+    val pendingCategoryId: Long? = null,
+    val smsCode: String? = null
 ) {
     val amount: Double? get() = amountText.toDoubleOrNull()
 

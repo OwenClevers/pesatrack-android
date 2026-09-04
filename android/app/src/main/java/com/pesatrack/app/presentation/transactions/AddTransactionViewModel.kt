@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -52,15 +53,23 @@ class AddTransactionViewModel(
                         time = transaction.transactionDate.toLocalTime(),
                         transactionId = transaction.id,
                         createdAt = transaction.createdAt,
-                        source = transaction.source
+                        source = transaction.source,
+                        smsCode = transaction.smsCode
                     )
                 }
             }
         }
     }
 
+    // BigDecimal(amount) (the binary value) would surface floating-point noise
+    // (e.g. 12345678.9 -> ...90000000000745...); parsing amount.toString() keeps
+    // Double's own shortest decimal representation instead.
     private fun formatAmountText(amount: Double): String =
-        if (amount == amount.toLong().toDouble()) amount.toLong().toString() else amount.toString()
+        if (amount == amount.toLong().toDouble()) {
+            amount.toLong().toString()
+        } else {
+            BigDecimal(amount.toString()).stripTrailingZeros().toPlainString()
+        }
 
     fun onAmountChange(value: String) {
         _uiState.update { it.copy(amountText = value) }
@@ -104,7 +113,8 @@ class AddTransactionViewModel(
                 description = state.description.ifBlank { null },
                 transactionDate = state.date.atTime(if (state.isEditing) state.time else LocalTime.now()),
                 source = state.source,
-                createdAt = state.createdAt
+                createdAt = state.createdAt,
+                smsCode = state.smsCode
             )
             if (state.isEditing) {
                 repository.updateTransaction(transaction)

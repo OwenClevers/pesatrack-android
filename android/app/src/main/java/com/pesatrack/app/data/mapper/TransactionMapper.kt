@@ -14,7 +14,8 @@ fun TransactionEntity.toDomain(): Transaction =
         description = description,
         transactionDate = transactionDate,
         source = source,
-        createdAt = createdAt
+        createdAt = createdAt,
+        smsCode = smsCode
     )
 
 // createdAt is null on a not-yet-persisted Transaction (new row -> now()) and
@@ -31,6 +32,7 @@ fun Transaction.toEntity(): TransactionEntity {
         transactionDate = transactionDate,
         source = source,
         createdAt = createdAt ?: now,
-        updatedAt = now
+        updatedAt = now,
+        smsCode = smsCode
     )
 }
