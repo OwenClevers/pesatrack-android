@@ -5,8 +5,10 @@ import androidx.room.Room
 import com.pesatrack.app.data.database.AppDatabase
 import com.pesatrack.app.data.database.MIGRATION_1_2
 import com.pesatrack.app.data.database.MIGRATION_2_3
+import com.pesatrack.app.data.database.MIGRATION_3_4
 import com.pesatrack.app.data.database.categorySeedCallback
 import com.pesatrack.app.data.repository.BudgetRepositoryImpl
+import com.pesatrack.app.data.sms.SmsReader
 import com.pesatrack.app.data.repository.CategoryRepositoryImpl
 import com.pesatrack.app.data.repository.TransactionRepositoryImpl
 import com.pesatrack.app.domain.repository.BudgetRepository
@@ -36,7 +38,7 @@ object AppModule {
                 AppDatabase::class.java,
                 DATABASE_NAME
             )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                 .addCallback(categorySeedCallback)
                 .build()
                 .also { database = it }
@@ -63,4 +65,7 @@ object AppModule {
                 provideDatabase(context).budgetDao()
             ).also { budgetRepository = it }
         }
+
+    fun provideSmsReader(context: Context): SmsReader =
+        SmsReader(context.applicationContext)
 }

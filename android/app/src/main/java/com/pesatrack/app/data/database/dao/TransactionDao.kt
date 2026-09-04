@@ -13,6 +13,11 @@ interface TransactionDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(transaction: TransactionEntity)
 
+    // Used for SMS import: IGNORE so a row whose smsCode collides with an
+    // existing one is skipped rather than overwritten. Returns -1 when ignored.
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertIgnoringDuplicates(transaction: TransactionEntity): Long
+
     @Query("""
         SELECT *
         FROM transactions
