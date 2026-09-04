@@ -2,6 +2,21 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Build file interference — important
+
+Android Studio's AGP Upgrade Assistant repeatedly re-injects
+`coreKtxVersion = "1.19.0"` into `gradle/libs.versions.toml` and
+`implementation(libs.core.ktx)` into `android/app/build.gradle.kts`.
+That version requires compileSdk 37 and AGP 9.1.0, and breaks the build.
+If either appears, delete it — the correct entry is `androidx-core-ktx`
+on `coreKtx = "1.10.1"`. This has recurred four times. Always check
+`git status` for unexpected changes to build files before building.
+
+## Design rules
+
+No emoji anywhere in the UI — stroke icons only (Material Symbols
+Outlined). Sentence case for all labels and buttons.
+
 ## Project overview
 
 PesaTrack is a native Android personal-finance tracker (Kotlin + Jetpack Compose), targeting Kenyan users ("Track every shilling", KSh currency formatting, M-Pesa SMS as a planned transaction source). The app currently lives entirely under `android/`; `backend/`, `database/`, `design/`, `infrastructure/`, and `scripts/` at the repo root are placeholders for future work and are currently empty.
@@ -52,3 +67,5 @@ When adding a new feature, follow this same shape: domain model + repository int
 ### Toolchain
 
 The Gradle/AGP/compileSdk versions in `android/gradle/libs.versions.toml` and `android/app/build.gradle.kts` are intentionally pinned (see the `because(...)` constraint comments in `app/build.gradle.kts`) — compileSdk 36 / AGP 8.10.1, since newer `androidx.core` versions require compileSdk 37 / AGP 9.1.0. Don't bump these casually; if a dependency forces a newer `androidx.core`, either pin it back down the same way or upgrade the whole toolchain deliberately.
+
+All Kotlin-related plugin entries in `libs.versions.toml` must use `version.ref = "kotlin"`, never a hardcoded literal — a hardcoded `2.4.0` on `kotlin-android` silently forced every Kotlin artifact (including the compose compiler plugin) up to 2.4.0 too and broke KSP compatibility (`ksp-2.1.21-2.0.1 is too old for kotlin-2.4.0`).
