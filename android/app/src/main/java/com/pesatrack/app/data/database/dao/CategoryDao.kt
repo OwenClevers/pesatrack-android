@@ -21,10 +21,10 @@ interface CategoryDao {
 
     @Query("""
         UPDATE categories
-        SET name = :name
+        SET name = :name, iconKey = :iconKey, colorKey = :colorKey
         WHERE id = :id
     """)
-    suspend fun updateName(id: Long, name: String)
+    suspend fun updateCategory(id: Long, name: String, iconKey: String, colorKey: String)
 
     @Query("""
         DELETE FROM categories

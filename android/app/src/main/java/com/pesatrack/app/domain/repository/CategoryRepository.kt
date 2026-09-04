@@ -8,9 +8,9 @@ interface CategoryRepository {
 
     fun getCategories(): Flow<List<Category>>
 
-    suspend fun addCategory(name: String): Category
+    suspend fun addCategory(name: String, iconKey: String, colorKey: String): Category
 
-    suspend fun renameCategory(id: Long, name: String)
+    suspend fun updateCategory(id: Long, name: String, iconKey: String, colorKey: String)
 
     suspend fun deleteCategory(id: Long): CategoryDeleteResult
 }

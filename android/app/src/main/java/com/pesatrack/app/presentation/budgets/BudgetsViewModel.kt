@@ -58,6 +58,12 @@ class BudgetsViewModel(
         }
     }
 
+    fun deleteBudget(budgetId: Long) {
+        viewModelScope.launch {
+            budgetRepository.deleteBudget(budgetId)
+        }
+    }
+
     private fun buildState(
         month: YearMonth,
         budgets: List<Budget>,

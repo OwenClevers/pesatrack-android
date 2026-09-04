@@ -24,12 +24,12 @@ class CategoriesViewModel(
                 initialValue = CategoriesUiState()
             )
 
-    fun saveCategory(id: Long?, name: String) {
+    fun saveCategory(id: Long?, name: String, iconKey: String, colorKey: String) {
         viewModelScope.launch {
             if (id == null) {
-                categoryRepository.addCategory(name)
+                categoryRepository.addCategory(name, iconKey, colorKey)
             } else {
-                categoryRepository.renameCategory(id, name)
+                categoryRepository.updateCategory(id, name, iconKey, colorKey)
             }
         }
     }

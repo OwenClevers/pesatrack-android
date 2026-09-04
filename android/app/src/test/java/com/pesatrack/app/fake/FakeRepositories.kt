@@ -53,19 +53,21 @@ class FakeCategoryRepository(
 
     override fun getCategories(): Flow<List<Category>> = categories
 
-    override suspend fun addCategory(name: String): Category {
+    override suspend fun addCategory(name: String, iconKey: String, colorKey: String): Category {
         val category = Category(
             id = (categories.value.maxOfOrNull { it.id } ?: 0) + 1,
             name = name,
-            iconKey = "other",
-            colorKey = "other"
+            iconKey = iconKey,
+            colorKey = colorKey
         )
         categories.update { it + category }
         return category
     }
 
-    override suspend fun renameCategory(id: Long, name: String) {
-        categories.update { list -> list.map { if (it.id == id) it.copy(name = name) else it } }
+    override suspend fun updateCategory(id: Long, name: String, iconKey: String, colorKey: String) {
+        categories.update { list ->
+            list.map { if (it.id == id) it.copy(name = name, iconKey = iconKey, colorKey = colorKey) else it }
+        }
     }
 
     override suspend fun deleteCategory(id: Long): CategoryDeleteResult {
@@ -86,5 +88,9 @@ class FakeBudgetRepository(
 
     override suspend fun upsertBudget(budget: Budget) {
         budgets.update { list -> list.filterNot { it.id == budget.id } + budget }
+    }
+
+    override suspend fun deleteBudget(id: Long) {
+        budgets.update { list -> list.filterNot { it.id == id } }
     }
 }

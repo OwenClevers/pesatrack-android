@@ -24,4 +24,10 @@ interface BudgetDao {
     // instead of violating the constraint.
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(budget: BudgetEntity)
+
+    @Query("""
+        DELETE FROM budgets
+        WHERE id = :id
+    """)
+    suspend fun deleteById(id: Long)
 }

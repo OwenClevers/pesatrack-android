@@ -22,15 +22,15 @@ class CategoryRepositoryImpl(
             }
     }
 
-    override suspend fun addCategory(name: String): Category {
+    override suspend fun addCategory(name: String, iconKey: String, colorKey: String): Category {
         val id = (dao.getMaxId() ?: 0) + 1
-        val entity = CategoryEntity(id = id, name = name, iconKey = "other", colorKey = "other")
+        val entity = CategoryEntity(id = id, name = name, iconKey = iconKey, colorKey = colorKey)
         dao.insert(entity)
         return entity.toDomain()
     }
 
-    override suspend fun renameCategory(id: Long, name: String) {
-        dao.updateName(id, name)
+    override suspend fun updateCategory(id: Long, name: String, iconKey: String, colorKey: String) {
+        dao.updateCategory(id, name, iconKey, colorKey)
     }
 
     override suspend fun deleteCategory(id: Long): CategoryDeleteResult {
