@@ -22,7 +22,7 @@ fun AppNavigation() {
         }
 
         composable(Screen.Dashboard.route) {
-            DashboardScreen()
+            DashboardScreen(navController)
         }
     }
 }
