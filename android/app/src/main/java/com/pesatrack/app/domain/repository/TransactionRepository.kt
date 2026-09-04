@@ -7,5 +7,9 @@ interface TransactionRepository {
 
     fun getTransactions(): Flow<List<Transaction>>
 
+    fun getTransaction(id: Long): Flow<Transaction?>
+
     suspend fun addTransaction(transaction: Transaction)
+
+    suspend fun deleteTransaction(id: Long)
 }

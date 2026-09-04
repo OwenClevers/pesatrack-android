@@ -29,6 +29,19 @@ interface TransactionDao {
     suspend fun getLatestTransaction(): TransactionEntity?
 
     @Query("""
+        SELECT *
+        FROM transactions
+        WHERE id = :id
+    """)
+    fun getTransactionById(id: Long): Flow<TransactionEntity?>
+
+    @Query("""
+        DELETE FROM transactions
+        WHERE id = :id
+    """)
+    suspend fun deleteById(id: Long)
+
+    @Query("""
         DELETE FROM transactions
     """)
     suspend fun deleteAll()
