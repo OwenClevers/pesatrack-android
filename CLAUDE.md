@@ -69,3 +69,10 @@ When adding a new feature, follow this same shape: domain model + repository int
 The Gradle/AGP/compileSdk versions in `android/gradle/libs.versions.toml` and `android/app/build.gradle.kts` are intentionally pinned (see the `because(...)` constraint comments in `app/build.gradle.kts`) — compileSdk 36 / AGP 8.10.1, since newer `androidx.core` versions require compileSdk 37 / AGP 9.1.0. Don't bump these casually; if a dependency forces a newer `androidx.core`, either pin it back down the same way or upgrade the whole toolchain deliberately.
 
 All Kotlin-related plugin entries in `libs.versions.toml` must use `version.ref = "kotlin"`, never a hardcoded literal — a hardcoded `2.4.0` on `kotlin-android` silently forced every Kotlin artifact (including the compose compiler plugin) up to 2.4.0 too and broke KSP compatibility (`ksp-2.1.21-2.0.1 is too old for kotlin-2.4.0`).
+
+### Compose Material3
+
+The project is on Compose Material3 `1.4.0` (via `composeBom = "2026.02.01"`). Two API gotchas hit while building the Add Transaction screen's category dropdown:
+
+- `ExposedDropdownMenu` is not top-level — it's a member function of `ExposedDropdownMenuBoxScope`, so it's only callable inside an `ExposedDropdownMenuBox { ... }` content lambda and needs no separate import.
+- Anchor typing uses `ExposedDropdownMenuAnchorType` (e.g. `Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)`), not `ExposedDropdownMenuDefaults` — the latter has no anchor-type constants in this version.
