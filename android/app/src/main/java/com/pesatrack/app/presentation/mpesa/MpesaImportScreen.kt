@@ -76,10 +76,11 @@ private val MessageIconContainer = Color(0xFFE8F5E9)
 fun MpesaImportScreen(navController: NavController) {
     val context = LocalContext.current
     val smsReader = remember { AppModule.provideSmsReader(context) }
+    val smsParsers = remember { AppModule.provideSmsParsers() }
     val transactionRepository = remember { AppModule.provideTransactionRepository(context) }
     val categoryRepository = remember { AppModule.provideCategoryRepository(context) }
     val viewModel: MpesaImportViewModel = viewModel(
-        factory = MpesaImportViewModel.Factory(smsReader, transactionRepository, categoryRepository)
+        factory = MpesaImportViewModel.Factory(smsReader, smsParsers, transactionRepository, categoryRepository)
     )
     val uiState by viewModel.uiState.collectAsState()
 
