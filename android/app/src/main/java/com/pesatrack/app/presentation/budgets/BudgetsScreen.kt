@@ -1,5 +1,6 @@
 package com.pesatrack.app.presentation.budgets
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.AddCircle
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -29,9 +31,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -174,6 +178,10 @@ fun BudgetsScreen(navController: NavController) {
                 onSave = { categoryId, limit ->
                     viewModel.saveBudget(budgetId = target.id, categoryId = categoryId, limit = limit)
                     sheetTarget = null
+                },
+                onDelete = {
+                    viewModel.deleteBudget(target.id)
+                    sheetTarget = null
                 }
             )
         }
@@ -189,11 +197,13 @@ private fun BudgetSheet(
     target: BudgetSheetTarget,
     availableCategories: List<Category>,
     onDismiss: () -> Unit,
-    onSave: (categoryId: Long, limit: Double) -> Unit
+    onSave: (categoryId: Long, limit: Double) -> Unit,
+    onDelete: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState()
     var category by remember(target) { mutableStateOf(target.category) }
     var limitText by remember(target) { mutableStateOf(target.limitText) }
+    var showDeleteConfirm by remember(target) { mutableStateOf(false) }
     val limit = limitText.toDoubleOrNull()
     val canSave = category != null && limit != null && limit > 0.0
 
@@ -232,16 +242,54 @@ private fun BudgetSheet(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Button(
-                onClick = { onSave(category!!.id, limit!!) },
-                enabled = canSave,
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(11.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                horizontalArrangement = Arrangement.spacedBy(9.dp)
             ) {
-                Text("Save")
+                if (target.id != 0L) {
+                    OutlinedButton(
+                        onClick = { showDeleteConfirm = true },
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(11.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Expense),
+                        border = BorderStroke(1.dp, Expense)
+                    ) {
+                        Text("Delete")
+                    }
+                }
+
+                Button(
+                    onClick = { onSave(category!!.id, limit!!) },
+                    enabled = canSave,
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(11.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                ) {
+                    Text("Save")
+                }
             }
         }
+    }
+
+    if (showDeleteConfirm) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirm = false },
+            title = { Text("Delete budget?") },
+            text = { Text("This can't be undone.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDeleteConfirm = false
+                    onDelete()
+                }) {
+                    Text("Delete", color = Expense)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirm = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
 

@@ -89,4 +89,8 @@ class FakeBudgetRepository(
     override suspend fun upsertBudget(budget: Budget) {
         budgets.update { list -> list.filterNot { it.id == budget.id } + budget }
     }
+
+    override suspend fun deleteBudget(id: Long) {
+        budgets.update { list -> list.filterNot { it.id == id } }
+    }
 }

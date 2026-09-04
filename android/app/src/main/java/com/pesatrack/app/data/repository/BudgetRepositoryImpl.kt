@@ -21,4 +21,8 @@ class BudgetRepositoryImpl(
     override suspend fun upsertBudget(budget: Budget) {
         dao.upsert(budget.toEntity())
     }
+
+    override suspend fun deleteBudget(id: Long) {
+        dao.deleteById(id)
+    }
 }

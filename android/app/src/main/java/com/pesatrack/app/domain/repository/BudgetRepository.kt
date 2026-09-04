@@ -9,4 +9,6 @@ interface BudgetRepository {
     fun getBudgets(month: YearMonth): Flow<List<Budget>>
 
     suspend fun upsertBudget(budget: Budget)
+
+    suspend fun deleteBudget(id: Long)
 }
