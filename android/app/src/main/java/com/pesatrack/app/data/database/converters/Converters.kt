@@ -13,7 +13,9 @@ class Converters {
 
     @TypeConverter
     fun toLocalDateTime(value: String?): LocalDateTime? =
-        value?.let(LocalDateTime::parse)
+        // Falls back to now() rather than null/throwing: the entity fields using this
+        // are non-nullable, so a null here would just relocate the crash to a Room NPE.
+        value?.let { runCatching { LocalDateTime.parse(it) }.getOrDefault(LocalDateTime.now()) }
 
     @TypeConverter
     fun fromTransactionType(type: TransactionType): String =
