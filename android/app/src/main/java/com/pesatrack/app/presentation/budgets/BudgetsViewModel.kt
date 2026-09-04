@@ -17,11 +17,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import java.time.YearMonth
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class BudgetsViewModel(
-    budgetRepository: BudgetRepository,
+    private val budgetRepository: BudgetRepository,
     transactionRepository: TransactionRepository,
     categoryRepository: CategoryRepository
 ) : ViewModel() {
@@ -49,6 +50,14 @@ class BudgetsViewModel(
         selectedMonth.value = month
     }
 
+    fun saveBudget(budgetId: Long, categoryId: Long, limit: Double) {
+        viewModelScope.launch {
+            budgetRepository.upsertBudget(
+                Budget(id = budgetId, categoryId = categoryId, limit = limit, month = selectedMonth.value)
+            )
+        }
+    }
+
     private fun buildState(
         month: YearMonth,
         budgets: List<Budget>,
@@ -69,13 +78,14 @@ class BudgetsViewModel(
                     .sumOf { it.amount }
 
                 BudgetRow(
+                    budgetId = budget.id,
                     category = categoriesById[budget.categoryId] ?: Category.unknown(budget.categoryId),
                     spent = spent,
                     limit = budget.limit
                 )
             }
 
-        return BudgetsUiState(month = month, rows = rows, isLoading = false)
+        return BudgetsUiState(month = month, rows = rows, categories = categories, isLoading = false)
     }
 
     class Factory(

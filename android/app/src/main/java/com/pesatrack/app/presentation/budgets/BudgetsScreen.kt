@@ -12,22 +12,29 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.AddCircle
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -39,11 +46,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.pesatrack.app.core.formatKsh
 import com.pesatrack.app.di.AppModule
+import com.pesatrack.app.domain.model.Category
 import com.pesatrack.app.ui.theme.Accent
 import com.pesatrack.app.ui.theme.Background
 import com.pesatrack.app.ui.theme.Expense
@@ -53,14 +62,19 @@ import com.pesatrack.app.ui.theme.Surface
 import com.pesatrack.app.ui.theme.TextPrimary
 import com.pesatrack.app.ui.theme.TextSecondary
 import com.pesatrack.app.ui.theme.components.EmptyState
+import com.pesatrack.app.ui.theme.components.MonthSelector
 import com.pesatrack.app.ui.theme.components.PesaBottomBar
 import com.pesatrack.app.ui.theme.components.visual
-import java.time.YearMonth
-import java.time.format.DateTimeFormatter
 
 private val TrackBackground = Color(0xFFEDEFF3)
 private val AccentText = Color(0xFFA67C00)
-private val monthFormat = DateTimeFormatter.ofPattern("MMMM yyyy")
+
+// id == 0 means "creating a new budget"; a real id means editing that row in place.
+private data class BudgetSheetTarget(
+    val id: Long,
+    val category: Category?,
+    val limitText: String
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,6 +88,8 @@ fun BudgetsScreen(navController: NavController) {
     )
     val uiState by viewModel.uiState.collectAsState()
 
+    var sheetTarget by remember { mutableStateOf<BudgetSheetTarget?>(null) }
+
     Scaffold(
         bottomBar = { PesaBottomBar(navController) },
         topBar = {
@@ -86,7 +102,9 @@ fun BudgetsScreen(navController: NavController) {
                         }
                     },
                     actions = {
-                        IconButton(onClick = {}) {
+                        IconButton(onClick = {
+                            sheetTarget = BudgetSheetTarget(id = 0, category = null, limitText = "")
+                        }) {
                             Icon(Icons.Outlined.AddCircle, contentDescription = "Add budget")
                         }
                     },
@@ -99,7 +117,11 @@ fun BudgetsScreen(navController: NavController) {
                 )
                 MonthSelector(
                     month = uiState.month,
-                    onMonthSelected = viewModel::onMonthSelected
+                    onMonthSelected = viewModel::onMonthSelected,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(PrimaryDark)
+                        .padding(horizontal = 20.dp, vertical = 4.dp)
                 )
             }
         }
@@ -119,71 +141,177 @@ fun BudgetsScreen(navController: NavController) {
                 )
             } else {
                 uiState.rows.forEach { row ->
-                    BudgetCard(row)
+                    BudgetCard(
+                        row = row,
+                        onClick = {
+                            sheetTarget = BudgetSheetTarget(
+                                id = row.budgetId,
+                                category = row.category,
+                                limitText = formatLimitText(row.limit)
+                            )
+                        }
+                    )
+                }
+            }
+        }
+
+        sheetTarget?.let { target ->
+            BudgetSheet(
+                target = target,
+                // A category already budgeted this month can't be picked again for a
+                // *new* budget -- saving would silently overwrite that other row.
+                // Editing keeps its own category available even though it's "in use".
+                availableCategories = uiState.categories.filter { category ->
+                    target.id != 0L || uiState.rows.none { it.category.id == category.id }
+                },
+                onDismiss = { sheetTarget = null },
+                onSave = { categoryId, limit ->
+                    viewModel.saveBudget(budgetId = target.id, categoryId = categoryId, limit = limit)
+                    sheetTarget = null
+                }
+            )
+        }
+    }
+}
+
+private fun formatLimitText(limit: Double): String =
+    if (limit == limit.toLong().toDouble()) limit.toLong().toString() else limit.toString()
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun BudgetSheet(
+    target: BudgetSheetTarget,
+    availableCategories: List<Category>,
+    onDismiss: () -> Unit,
+    onSave: (categoryId: Long, limit: Double) -> Unit
+) {
+    val sheetState = rememberModalBottomSheetState()
+    var category by remember(target) { mutableStateOf(target.category) }
+    var limitText by remember(target) { mutableStateOf(target.limitText) }
+    val limit = limitText.toDoubleOrNull()
+    val canSave = category != null && limit != null && limit > 0.0
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = Surface
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 8.dp)
+                .padding(bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = if (target.id == 0L) "New budget" else "Edit budget",
+                style = MaterialTheme.typography.titleMedium,
+                color = TextPrimary
+            )
+
+            BudgetCategoryField(
+                selected = category,
+                categories = availableCategories,
+                enabled = target.id == 0L,
+                onSelect = { category = it }
+            )
+
+            OutlinedTextField(
+                value = limitText,
+                onValueChange = { limitText = it },
+                label = { Text("Monthly limit") },
+                placeholder = { Text("KSh 0.00") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Button(
+                onClick = { onSave(category!!.id, limit!!) },
+                enabled = canSave,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(11.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Primary)
+            ) {
+                Text("Save")
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun BudgetCategoryField(
+    selected: Category?,
+    categories: List<Category>,
+    enabled: Boolean,
+    onSelect: (Category) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded && enabled,
+        onExpandedChange = { if (enabled) expanded = it }
+    ) {
+        OutlinedTextField(
+            value = selected?.name ?: "",
+            onValueChange = {},
+            readOnly = true,
+            enabled = enabled,
+            modifier = Modifier
+                .fillMaxWidth()
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+            label = { Text("Category") },
+            placeholder = { Text("Select category") },
+            trailingIcon = if (enabled) {
+                { Icon(Icons.Outlined.KeyboardArrowDown, contentDescription = null) }
+            } else null,
+            leadingIcon = selected?.let { category ->
+                {
+                    Icon(
+                        imageVector = category.visual().icon,
+                        contentDescription = null,
+                        tint = category.visual().content
+                    )
+                }
+            }
+        )
+
+        if (enabled) {
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                categories.forEach { category ->
+                    DropdownMenuItem(
+                        text = { Text(category.name) },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = category.visual().icon,
+                                contentDescription = null,
+                                tint = category.visual().content
+                            )
+                        },
+                        onClick = {
+                            onSelect(category)
+                            expanded = false
+                        }
+                    )
                 }
             }
         }
     }
 }
 
-@Composable
-private fun MonthSelector(
-    month: YearMonth,
-    onMonthSelected: (YearMonth) -> Unit
-) {
-    var expanded by remember { mutableStateOf(false) }
-    val months = remember { (0..11).map { YearMonth.now().minusMonths(it.toLong()) } }
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(PrimaryDark)
-            .padding(horizontal = 20.dp, vertical = 4.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .clickable { expanded = true }
-                .padding(vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(
-                text = month.format(monthFormat),
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.White.copy(alpha = 0.88f)
-            )
-            Icon(
-                imageVector = Icons.Outlined.KeyboardArrowDown,
-                contentDescription = null,
-                tint = Color.White.copy(alpha = 0.88f),
-                modifier = Modifier.size(16.dp)
-            )
-        }
-
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            months.forEach { option ->
-                DropdownMenuItem(
-                    text = { Text(option.format(monthFormat)) },
-                    onClick = {
-                        onMonthSelected(option)
-                        expanded = false
-                    }
-                )
-            }
-        }
-    }
-}
 
 @Composable
-private fun BudgetCard(row: BudgetRow) {
+private fun BudgetCard(row: BudgetRow, onClick: () -> Unit) {
     val visual = row.category.visual()
     val health = if (row.percent >= 90) Expense else if (row.percent >= 60) Accent else Primary
     val healthText = if (row.percent >= 90) Expense else if (row.percent >= 60) AccentText else Primary
 
     Card(
+        onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Surface),
         elevation = CardDefaults.cardElevation(0.dp)
