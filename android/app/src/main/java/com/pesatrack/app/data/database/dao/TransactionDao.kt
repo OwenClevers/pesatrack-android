@@ -28,14 +28,6 @@ interface TransactionDao {
     @Query("""
         SELECT *
         FROM transactions
-        ORDER BY transactionDate DESC
-        LIMIT 1
-    """)
-    suspend fun getLatestTransaction(): TransactionEntity?
-
-    @Query("""
-        SELECT *
-        FROM transactions
         WHERE id = :id
     """)
     fun getTransactionById(id: Long): Flow<TransactionEntity?>
@@ -52,9 +44,4 @@ interface TransactionDao {
         WHERE categoryId = :categoryId
     """)
     suspend fun countByCategory(categoryId: Long): Int
-
-    @Query("""
-        DELETE FROM transactions
-    """)
-    suspend fun deleteAll()
 }
