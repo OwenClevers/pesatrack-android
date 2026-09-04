@@ -35,4 +35,9 @@ class TransactionRepositoryImpl(
     override suspend fun deleteTransaction(id: Long) {
         dao.deleteById(id)
     }
+
+    override suspend fun importMpesaTransaction(transaction: Transaction, smsCode: String): Boolean {
+        val rowId = dao.insertIgnoringDuplicates(transaction.toEntity().copy(smsCode = smsCode))
+        return rowId != -1L
+    }
 }

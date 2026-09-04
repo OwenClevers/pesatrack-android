@@ -15,6 +15,7 @@ import androidx.compose.material.icons.outlined.CreditCard
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.automirrored.outlined.Message
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -67,6 +68,12 @@ fun SettingsScreen(navController: NavController) {
                 icon = Icons.Outlined.Category,
                 label = "Categories",
                 onClick = { navController.navigate(Screen.Categories.route) }
+            )
+            HorizontalDivider(color = Divider)
+            SettingsRow(
+                icon = Icons.AutoMirrored.Outlined.Message,
+                label = "Import M-Pesa SMS",
+                onClick = { navController.navigate(Screen.MpesaImport.route) }
             )
             HorizontalDivider(color = Divider)
             SettingsRow(

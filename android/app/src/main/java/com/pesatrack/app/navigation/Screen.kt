@@ -13,4 +13,5 @@ sealed class Screen(val route: String) {
     object Reports : Screen("reports")
     object Settings : Screen("settings")
     object Categories : Screen("categories")
+    object MpesaImport : Screen("mpesa_import")
 }

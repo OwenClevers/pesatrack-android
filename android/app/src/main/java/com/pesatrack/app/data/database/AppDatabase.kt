@@ -15,7 +15,7 @@ import com.pesatrack.app.data.database.entity.TransactionEntity
 
 @Database(
     entities = [TransactionEntity::class, CategoryEntity::class, BudgetEntity::class],
-    version = 3,
+    version = 4,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -68,6 +68,22 @@ val MIGRATION_2_3 = object : Migration(2, 3) {
             """
             CREATE UNIQUE INDEX IF NOT EXISTS `index_budgets_categoryId_month`
             ON `budgets` (`categoryId`, `month`)
+            """.trimIndent()
+        )
+    }
+}
+
+val MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            ALTER TABLE `transactions` ADD COLUMN `smsCode` TEXT DEFAULT NULL
+            """.trimIndent()
+        )
+        db.execSQL(
+            """
+            CREATE UNIQUE INDEX IF NOT EXISTS `index_transactions_smsCode`
+            ON `transactions` (`smsCode`)
             """.trimIndent()
         )
     }
