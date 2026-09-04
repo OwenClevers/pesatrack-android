@@ -52,7 +52,8 @@ object AppModule {
     fun provideCategoryRepository(context: Context): CategoryRepository =
         categoryRepository ?: synchronized(this) {
             categoryRepository ?: CategoryRepositoryImpl(
-                provideDatabase(context).categoryDao()
+                provideDatabase(context).categoryDao(),
+                provideDatabase(context).transactionDao()
             ).also { categoryRepository = it }
         }
 

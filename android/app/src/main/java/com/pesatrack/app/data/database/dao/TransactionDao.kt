@@ -42,6 +42,13 @@ interface TransactionDao {
     suspend fun deleteById(id: Long)
 
     @Query("""
+        SELECT COUNT(*)
+        FROM transactions
+        WHERE categoryId = :categoryId
+    """)
+    suspend fun countByCategory(categoryId: Long): Int
+
+    @Query("""
         DELETE FROM transactions
     """)
     suspend fun deleteAll()
