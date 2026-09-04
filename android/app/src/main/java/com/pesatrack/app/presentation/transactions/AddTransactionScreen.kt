@@ -73,8 +73,9 @@ private val dateFormat = DateTimeFormatter.ofPattern("d MMM yyyy")
 fun AddTransactionScreen(navController: NavController) {
     val context = LocalContext.current
     val repository = remember { AppModule.provideTransactionRepository(context) }
+    val categoryRepository = remember { AppModule.provideCategoryRepository(context) }
     val viewModel: AddTransactionViewModel = viewModel(
-        factory = AddTransactionViewModel.Factory(repository)
+        factory = AddTransactionViewModel.Factory(repository, categoryRepository)
     )
     val uiState by viewModel.uiState.collectAsState()
 
@@ -132,6 +133,7 @@ fun AddTransactionScreen(navController: NavController) {
             FormField(label = "Category") {
                 CategoryDropdown(
                     selected = uiState.category,
+                    categories = uiState.categories,
                     onSelect = viewModel::onCategoryChange
                 )
             }
@@ -255,6 +257,7 @@ private fun SegmentedOption(
 @Composable
 private fun CategoryDropdown(
     selected: Category?,
+    categories: List<Category>,
     onSelect: (Category) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -264,7 +267,7 @@ private fun CategoryDropdown(
         onExpandedChange = { expanded = it }
     ) {
         OutlinedTextField(
-            value = selected?.label ?: "",
+            value = selected?.name ?: "",
             onValueChange = {},
             readOnly = true,
             modifier = Modifier
@@ -290,9 +293,9 @@ private fun CategoryDropdown(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            Category.entries.forEach { category ->
+            categories.forEach { category ->
                 DropdownMenuItem(
-                    text = { Text(category.label) },
+                    text = { Text(category.name) },
                     leadingIcon = {
                         Icon(
                             imageVector = category.visual().icon,

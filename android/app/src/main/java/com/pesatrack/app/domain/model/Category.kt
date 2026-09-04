@@ -1,17 +1,13 @@
 package com.pesatrack.app.domain.model
 
-enum class Category(val id: Long, val label: String) {
-    FOOD(1, "Food"),
-    FUEL(2, "Fuel"),
-    SHOPPING(3, "Shopping"),
-    UTILITIES(4, "Utilities"),
-    ENTERTAINMENT(5, "Entertainment"),
-    TRANSPORT(6, "Transport"),
-    MEDICAL(7, "Medical"),
-    EDUCATION(8, "Education"),
-    OTHER(9, "Other");
-
+data class Category(
+    val id: Long,
+    val name: String,
+    val iconKey: String,
+    val colorKey: String
+) {
     companion object {
-        fun fromId(id: Long): Category = entries.firstOrNull { it.id == id } ?: OTHER
+        fun unknown(id: Long): Category =
+            Category(id = id, name = "Other", iconKey = "other", colorKey = "other")
     }
 }

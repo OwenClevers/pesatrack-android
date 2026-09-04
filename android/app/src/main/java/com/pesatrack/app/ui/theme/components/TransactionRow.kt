@@ -27,9 +27,9 @@ private val dateFormat = DateTimeFormatter.ofPattern("d MMM yyyy")
 @Composable
 fun TransactionRow(
     transaction: Transaction,
+    category: Category,
     modifier: Modifier = Modifier
 ) {
-    val category = Category.fromId(transaction.categoryId)
     val visual = category.visual()
     val isIncome = transaction.type == TransactionType.INCOME
 
@@ -48,7 +48,7 @@ fun TransactionRow(
         ) {
             Icon(
                 imageVector = visual.icon,
-                contentDescription = category.label,
+                contentDescription = category.name,
                 tint = visual.content,
                 modifier = Modifier.size(20.dp)
             )
@@ -58,7 +58,7 @@ fun TransactionRow(
 
         Column(Modifier.weight(1f)) {
             Text(
-                text = transaction.merchant ?: category.label,
+                text = transaction.merchant ?: category.name,
                 style = MaterialTheme.typography.labelLarge,
                 color = TextPrimary
             )

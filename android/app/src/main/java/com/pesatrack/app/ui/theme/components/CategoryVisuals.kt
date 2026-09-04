@@ -21,14 +21,15 @@ data class CategoryVisual(
     val content: Color
 )
 
-fun Category.visual(): CategoryVisual = when (this) {
-    Category.FOOD -> CategoryVisual(Icons.Filled.Restaurant, FoodContainer, FoodContent)
-    Category.FUEL -> CategoryVisual(Icons.Filled.LocalGasStation, FuelContainer, FuelContent)
-    Category.SHOPPING -> CategoryVisual(Icons.Filled.ShoppingBag, ShoppingContainer, ShoppingContent)
-    Category.UTILITIES -> CategoryVisual(Icons.Filled.Bolt, UtilitiesContainer, UtilitiesContent)
-    Category.ENTERTAINMENT -> CategoryVisual(Icons.Filled.Movie, EntertainmentContainer, EntertainmentContent)
-    Category.TRANSPORT -> CategoryVisual(Icons.Filled.DirectionsBus, TransportContainer, TransportContent)
-    Category.MEDICAL -> CategoryVisual(Icons.Filled.LocalHospital, MedicalContainer, MedicalContent)
-    Category.EDUCATION -> CategoryVisual(Icons.Filled.School, EducationContainer, EducationContent)
-    Category.OTHER -> CategoryVisual(Icons.Filled.Description, OtherContainer, OtherContent)
+// Keyed by iconKey (stable) rather than identity, since Category is Room-backed, not an enum.
+fun Category.visual(): CategoryVisual = when (iconKey) {
+    "food" -> CategoryVisual(Icons.Filled.Restaurant, FoodContainer, FoodContent)
+    "fuel" -> CategoryVisual(Icons.Filled.LocalGasStation, FuelContainer, FuelContent)
+    "shopping" -> CategoryVisual(Icons.Filled.ShoppingBag, ShoppingContainer, ShoppingContent)
+    "utilities" -> CategoryVisual(Icons.Filled.Bolt, UtilitiesContainer, UtilitiesContent)
+    "entertainment" -> CategoryVisual(Icons.Filled.Movie, EntertainmentContainer, EntertainmentContent)
+    "transport" -> CategoryVisual(Icons.Filled.DirectionsBus, TransportContainer, TransportContent)
+    "medical" -> CategoryVisual(Icons.Filled.LocalHospital, MedicalContainer, MedicalContent)
+    "education" -> CategoryVisual(Icons.Filled.School, EducationContainer, EducationContent)
+    else -> CategoryVisual(Icons.Filled.Description, OtherContainer, OtherContent)
 }
