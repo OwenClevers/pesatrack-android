@@ -2,7 +2,9 @@ package com.pesatrack.app.presentation.categories
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -58,12 +61,23 @@ import com.pesatrack.app.ui.theme.StatusBarIcons
 import com.pesatrack.app.ui.theme.Surface
 import com.pesatrack.app.ui.theme.TextPrimary
 import com.pesatrack.app.ui.theme.TextSecondary
+import com.pesatrack.app.ui.theme.components.CategoryIconKeys
+import com.pesatrack.app.ui.theme.components.CategoryColorKeys
 import com.pesatrack.app.ui.theme.components.EmptyState
 import com.pesatrack.app.ui.theme.components.PesaBottomBar
+import com.pesatrack.app.ui.theme.components.categoryColorSwatch
+import com.pesatrack.app.ui.theme.components.categoryIcon
 import com.pesatrack.app.ui.theme.components.visual
 import kotlinx.coroutines.launch
 
-private data class CategorySheetTarget(val id: Long?, val initialName: String)
+private const val DEFAULT_CATEGORY_KEY = "other"
+
+private data class CategorySheetTarget(
+    val id: Long?,
+    val initialName: String,
+    val initialIconKey: String = DEFAULT_CATEGORY_KEY,
+    val initialColorKey: String = DEFAULT_CATEGORY_KEY
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -122,7 +136,12 @@ fun CategoriesScreen(navController: NavController) {
                     CategoryRow(
                         category = category,
                         onClick = {
-                            sheetTarget = CategorySheetTarget(id = category.id, initialName = category.name)
+                            sheetTarget = CategorySheetTarget(
+                                id = category.id,
+                                initialName = category.name,
+                                initialIconKey = category.iconKey,
+                                initialColorKey = category.colorKey
+                            )
                         }
                     )
                     if (index != uiState.categories.lastIndex) {
@@ -135,6 +154,8 @@ fun CategoriesScreen(navController: NavController) {
         sheetTarget?.let { target ->
             val sheetState = rememberModalBottomSheetState()
             var name by remember(target) { mutableStateOf(target.initialName) }
+            var iconKey by remember(target) { mutableStateOf(target.initialIconKey) }
+            var colorKey by remember(target) { mutableStateOf(target.initialColorKey) }
 
             ModalBottomSheet(
                 onDismissRequest = { sheetTarget = null },
@@ -161,6 +182,50 @@ fun CategoriesScreen(navController: NavController) {
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
+
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(
+                            text = "Icon",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = TextSecondary
+                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            CategoryIconKeys.forEach { key ->
+                                IconOption(
+                                    iconKey = key,
+                                    selected = key == iconKey,
+                                    onClick = { iconKey = key }
+                                )
+                            }
+                        }
+                    }
+
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(
+                            text = "Color",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = TextSecondary
+                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            CategoryColorKeys.forEach { key ->
+                                ColorOption(
+                                    colorKey = key,
+                                    selected = key == colorKey,
+                                    onClick = { colorKey = key }
+                                )
+                            }
+                        }
+                    }
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -192,7 +257,7 @@ fun CategoriesScreen(navController: NavController) {
 
                         OutlinedButton(
                             onClick = {
-                                viewModel.saveCategory(target.id, name.trim())
+                                viewModel.saveCategory(target.id, name.trim(), iconKey, colorKey)
                                 sheetTarget = null
                             },
                             enabled = name.isNotBlank(),
@@ -220,6 +285,49 @@ fun CategoriesScreen(navController: NavController) {
             )
         }
     }
+}
+
+@Composable
+private fun IconOption(
+    iconKey: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .size(40.dp)
+            .clip(CircleShape)
+            .background(Surface)
+            .then(
+                if (selected) Modifier.border(2.dp, Primary, CircleShape) else Modifier
+            )
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = categoryIcon(iconKey),
+            contentDescription = iconKey,
+            tint = if (selected) Primary else TextSecondary
+        )
+    }
+}
+
+@Composable
+private fun ColorOption(
+    colorKey: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .size(32.dp)
+            .clip(CircleShape)
+            .background(categoryColorSwatch(colorKey))
+            .then(
+                if (selected) Modifier.border(2.dp, TextPrimary, CircleShape) else Modifier
+            )
+            .clickable(onClick = onClick)
+    )
 }
 
 @Composable
