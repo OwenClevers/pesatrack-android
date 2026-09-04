@@ -39,6 +39,8 @@ val TextSecondaryDark = Color(0xFF9CA3AF)
 // Onboarding
 val OnboardingArtBackground = Color(0xFFEDF7F1)
 val OnboardingDotInactive = Color(0xFFDDE1E7)
+val OnboardingArtBackgroundDark = Color(0xFF1B2620)
+val OnboardingDotInactiveDark = Color(0xFF3A3D42)
 
 // Category tints — container / content pairs, light
 val FoodContainer = Color(0xFFFFF8E1)

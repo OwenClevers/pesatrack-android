@@ -57,7 +57,10 @@ import com.pesatrack.app.navigation.Screen
 import com.pesatrack.app.ui.theme.Background
 import com.pesatrack.app.ui.theme.Divider
 import com.pesatrack.app.ui.theme.Expense
+import com.pesatrack.app.ui.theme.FuelContainerDark
+import com.pesatrack.app.ui.theme.FuelContentDark
 import com.pesatrack.app.ui.theme.Income
+import com.pesatrack.app.ui.theme.LocalPesaTrackColors
 import com.pesatrack.app.ui.theme.Primary
 import com.pesatrack.app.ui.theme.PrimaryDark
 import com.pesatrack.app.ui.theme.Surface
@@ -287,6 +290,8 @@ private fun DetailRow(
 
 @Composable
 private fun SourceRow(source: TransactionSource) {
+    val isDark = LocalPesaTrackColors.current.isDark
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -302,13 +307,13 @@ private fun SourceRow(source: TransactionSource) {
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(6.dp))
-                .background(pillContainer)
+                .background(if (isDark) FuelContainerDark else pillContainer)
                 .padding(horizontal = 8.dp, vertical = 4.dp)
         ) {
             Text(
                 text = source.displayLabel(),
                 style = MaterialTheme.typography.labelSmall,
-                color = pillContent
+                color = if (isDark) FuelContentDark else pillContent
             )
         }
     }

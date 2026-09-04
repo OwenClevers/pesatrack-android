@@ -28,8 +28,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.pesatrack.app.core.formatKsh
 import com.pesatrack.app.ui.theme.Divider
+import com.pesatrack.app.ui.theme.FoodContainerDark
+import com.pesatrack.app.ui.theme.FoodContentDark
+import com.pesatrack.app.ui.theme.FuelContainerDark
 import com.pesatrack.app.ui.theme.Income
 import com.pesatrack.app.ui.theme.LocalPesaTrackColors
+import com.pesatrack.app.ui.theme.MedicalContainerDark
 import com.pesatrack.app.ui.theme.Primary
 import com.pesatrack.app.ui.theme.Surface
 import com.pesatrack.app.ui.theme.TextPrimary
@@ -40,6 +44,9 @@ private val AccentContent = Color(0xFFA67C00)
 private val ExpenseContainer = Color(0xFFFDECEA)
 private val IncomeContainer = Color(0xFFE8F5E9)
 
+// Dark-mode container swaps -- reusing the category dark pairs of the same hue
+// (amber/red/green) rather than declaring near-duplicate constants.
+
 @Composable
 fun MoneyCard(
     todaySpending: Double,
@@ -48,6 +55,8 @@ fun MoneyCard(
     onRemainingBudgetClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isDark = LocalPesaTrackColors.current.isDark
+
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -59,7 +68,7 @@ fun MoneyCard(
             amountText = formatKsh(todaySpending),
             amountColor = TextPrimary,
             icon = Icons.Outlined.ShoppingCart,
-            iconContainer = ExpenseContainer,
+            iconContainer = if (isDark) MedicalContainerDark else ExpenseContainer,
             iconContent = LocalPesaTrackColors.current.expense
         )
         HorizontalDivider(color = Divider)
@@ -68,7 +77,7 @@ fun MoneyCard(
             amountText = formatKsh(monthIncome),
             amountColor = Income,
             icon = Icons.AutoMirrored.Outlined.TrendingUp,
-            iconContainer = IncomeContainer,
+            iconContainer = if (isDark) FuelContainerDark else IncomeContainer,
             iconContent = LocalPesaTrackColors.current.income
         )
         HorizontalDivider(color = Divider)
@@ -77,8 +86,8 @@ fun MoneyCard(
             amountText = remainingBudget?.let { formatKsh(it) } ?: "—",
             amountColor = Primary,
             icon = Icons.Outlined.AccountBalanceWallet,
-            iconContainer = AccentContainer,
-            iconContent = AccentContent,
+            iconContainer = if (isDark) FoodContainerDark else AccentContainer,
+            iconContent = if (isDark) FoodContentDark else AccentContent,
             onClick = onRemainingBudgetClick
         )
     }

@@ -57,7 +57,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.pesatrack.app.di.AppModule
 import com.pesatrack.app.ui.theme.Background
+import com.pesatrack.app.ui.theme.FuelContainerDark
 import com.pesatrack.app.ui.theme.Income
+import com.pesatrack.app.ui.theme.LocalPesaTrackColors
 import com.pesatrack.app.ui.theme.Primary
 import com.pesatrack.app.ui.theme.PrimaryDark
 import com.pesatrack.app.ui.theme.Surface
@@ -65,6 +67,7 @@ import com.pesatrack.app.ui.theme.TextPrimary
 import com.pesatrack.app.ui.theme.TextSecondary
 
 private val TrackBackground = Color(0xFFEDEFF3)
+private val TrackBackgroundDark = Color(0xFF3A3D42)
 private val MessageIconContainer = Color(0xFFE8F5E9)
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -196,6 +199,8 @@ private fun PermissionRationaleCard(
     denied: Boolean,
     onRequestPermission: () -> Unit
 ) {
+    val isDark = LocalPesaTrackColors.current.isDark
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Surface),
@@ -209,7 +214,7 @@ private fun PermissionRationaleCard(
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)
-                    .background(MessageIconContainer),
+                    .background(if (isDark) FuelContainerDark else MessageIconContainer),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(Icons.Outlined.Sms, contentDescription = null, tint = Income)
@@ -248,6 +253,8 @@ private fun PermissionRationaleCard(
 
 @Composable
 private fun FoundMessagesCard(count: Int) {
+    val isDark = LocalPesaTrackColors.current.isDark
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Surface),
@@ -276,7 +283,7 @@ private fun FoundMessagesCard(count: Int) {
                 modifier = Modifier
                     .size(36.dp)
                     .clip(RoundedCornerShape(10.dp))
-                    .background(MessageIconContainer),
+                    .background(if (isDark) FuelContainerDark else MessageIconContainer),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(Icons.AutoMirrored.Outlined.Message, contentDescription = null, tint = Income)
@@ -287,6 +294,8 @@ private fun FoundMessagesCard(count: Int) {
 
 @Composable
 private fun ImportProgressCard(state: MpesaImportUiState) {
+    val isDark = LocalPesaTrackColors.current.isDark
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Surface),
@@ -315,7 +324,7 @@ private fun ImportProgressCard(state: MpesaImportUiState) {
                     .padding(top = 6.dp)
                     .height(6.dp)
                     .clip(RoundedCornerShape(3.dp))
-                    .background(TrackBackground)
+                    .background(if (isDark) TrackBackgroundDark else TrackBackground)
             ) {
                 Box(
                     modifier = Modifier
