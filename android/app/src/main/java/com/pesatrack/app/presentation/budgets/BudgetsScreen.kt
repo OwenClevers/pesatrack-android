@@ -56,6 +56,8 @@ import com.pesatrack.app.domain.model.Category
 import com.pesatrack.app.ui.theme.Accent
 import com.pesatrack.app.ui.theme.Background
 import com.pesatrack.app.ui.theme.Expense
+import com.pesatrack.app.ui.theme.FoodContentDark
+import com.pesatrack.app.ui.theme.LocalPesaTrackColors
 import com.pesatrack.app.ui.theme.Primary
 import com.pesatrack.app.ui.theme.PrimaryDark
 import com.pesatrack.app.ui.theme.Surface
@@ -67,6 +69,7 @@ import com.pesatrack.app.ui.theme.components.PesaBottomBar
 import com.pesatrack.app.ui.theme.components.visual
 
 private val TrackBackground = Color(0xFFEDEFF3)
+private val TrackBackgroundDark = Color(0xFF3A3D42)
 private val AccentText = Color(0xFFA67C00)
 
 // id == 0 means "creating a new budget"; a real id means editing that row in place.
@@ -306,9 +309,16 @@ private fun BudgetCategoryField(
 
 @Composable
 private fun BudgetCard(row: BudgetRow, onClick: () -> Unit) {
+    val isDark = LocalPesaTrackColors.current.isDark
     val visual = row.category.visual()
     val health = if (row.percent >= 90) Expense else if (row.percent >= 60) Accent else Primary
-    val healthText = if (row.percent >= 90) Expense else if (row.percent >= 60) AccentText else Primary
+    val healthText = if (row.percent >= 90) {
+        Expense
+    } else if (row.percent >= 60) {
+        if (isDark) FoodContentDark else AccentText
+    } else {
+        Primary
+    }
 
     Card(
         onClick = onClick,
@@ -363,7 +373,7 @@ private fun BudgetCard(row: BudgetRow, onClick: () -> Unit) {
                     .padding(top = 8.dp)
                     .height(5.dp)
                     .clip(RoundedCornerShape(3.dp))
-                    .background(TrackBackground)
+                    .background(if (isDark) TrackBackgroundDark else TrackBackground)
             ) {
                 Box(
                     modifier = Modifier

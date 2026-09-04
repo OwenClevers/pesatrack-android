@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Category
 import androidx.compose.material.icons.outlined.CreditCard
+import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.outlined.Message
@@ -20,6 +21,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -38,6 +40,7 @@ import androidx.navigation.NavController
 import com.pesatrack.app.navigation.Screen
 import com.pesatrack.app.ui.theme.Background
 import com.pesatrack.app.ui.theme.Divider
+import com.pesatrack.app.ui.theme.LocalDarkModeController
 import com.pesatrack.app.ui.theme.PrimaryDark
 import com.pesatrack.app.ui.theme.Surface
 import com.pesatrack.app.ui.theme.TextPrimary
@@ -48,6 +51,7 @@ import com.pesatrack.app.ui.theme.components.PesaBottomBar
 @Composable
 fun SettingsScreen(navController: NavController) {
     var showAbout by remember { mutableStateOf(false) }
+    val darkModeController = LocalDarkModeController.current
 
     Scaffold(
         bottomBar = { PesaBottomBar(navController) },
@@ -78,6 +82,17 @@ fun SettingsScreen(navController: NavController) {
                 icon = Icons.AutoMirrored.Outlined.Message,
                 label = "Import M-Pesa SMS",
                 onClick = { navController.navigate(Screen.MpesaImport.route) }
+            )
+            HorizontalDivider(color = Divider)
+            SettingsRow(
+                icon = Icons.Outlined.DarkMode,
+                label = "Dark mode",
+                trailing = {
+                    Switch(
+                        checked = darkModeController.isDarkMode,
+                        onCheckedChange = darkModeController.setDarkMode
+                    )
+                }
             )
             HorizontalDivider(color = Divider)
             SettingsRow(
@@ -114,7 +129,8 @@ private fun SettingsRow(
     icon: ImageVector,
     label: String,
     onClick: (() -> Unit)? = null,
-    trailingText: String? = null
+    trailingText: String? = null,
+    trailing: (@Composable () -> Unit)? = null
 ) {
     Row(
         modifier = Modifier
@@ -142,8 +158,9 @@ private fun SettingsRow(
                 color = TextSecondary
             )
         }
-        if (onClick != null) {
-            Icon(
+        when {
+            trailing != null -> trailing()
+            onClick != null -> Icon(
                 imageVector = Icons.Outlined.KeyboardArrowRight,
                 contentDescription = null,
                 tint = TextSecondary

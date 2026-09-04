@@ -36,8 +36,11 @@ import androidx.navigation.NavController
 import com.pesatrack.app.R
 import com.pesatrack.app.core.OnboardingPreferences
 import com.pesatrack.app.navigation.Screen
+import com.pesatrack.app.ui.theme.LocalPesaTrackColors
 import com.pesatrack.app.ui.theme.OnboardingArtBackground
+import com.pesatrack.app.ui.theme.OnboardingArtBackgroundDark
 import com.pesatrack.app.ui.theme.OnboardingDotInactive
+import com.pesatrack.app.ui.theme.OnboardingDotInactiveDark
 import com.pesatrack.app.ui.theme.Primary
 import com.pesatrack.app.ui.theme.Surface
 import com.pesatrack.app.ui.theme.TextPrimary
@@ -138,6 +141,8 @@ fun OnboardingScreen(navController: NavController) {
 
 @Composable
 private fun OnboardingPageContent(page: OnboardingPage) {
+    val isDark = LocalPesaTrackColors.current.isDark
+
     Column(modifier = Modifier.fillMaxSize()) {
         Box(
             modifier = Modifier
@@ -145,7 +150,7 @@ private fun OnboardingPageContent(page: OnboardingPage) {
                 .fillMaxWidth()
                 .padding(vertical = 8.dp)
                 .clip(RoundedCornerShape(20.dp))
-                .background(OnboardingArtBackground),
+                .background(if (isDark) OnboardingArtBackgroundDark else OnboardingArtBackground),
             contentAlignment = Alignment.Center
         ) {
             Image(
@@ -185,6 +190,9 @@ private fun DotsIndicator(
     currentPage: Int,
     modifier: Modifier = Modifier
 ) {
+    val isDark = LocalPesaTrackColors.current.isDark
+    val inactiveColor = if (isDark) OnboardingDotInactiveDark else OnboardingDotInactive
+
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterHorizontally),
@@ -197,7 +205,7 @@ private fun DotsIndicator(
                     .height(5.dp)
                     .width(if (active) 15.dp else 5.dp)
                     .clip(RoundedCornerShape(3.dp))
-                    .background(if (active) Primary else OnboardingDotInactive)
+                    .background(if (active) Primary else inactiveColor)
             )
         }
     }
