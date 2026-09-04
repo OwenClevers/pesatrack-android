@@ -6,10 +6,12 @@ import java.time.YearMonth
 data class BudgetsUiState(
     val month: YearMonth = YearMonth.now(),
     val rows: List<BudgetRow> = emptyList(),
+    val categories: List<Category> = emptyList(),
     val isLoading: Boolean = true
 )
 
 data class BudgetRow(
+    val budgetId: Long,
     val category: Category,
     val spent: Double,
     val limit: Double

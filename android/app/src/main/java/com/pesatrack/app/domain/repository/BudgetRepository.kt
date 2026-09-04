@@ -7,4 +7,6 @@ import java.time.YearMonth
 interface BudgetRepository {
 
     fun getBudgets(month: YearMonth): Flow<List<Budget>>
+
+    suspend fun upsertBudget(budget: Budget)
 }
