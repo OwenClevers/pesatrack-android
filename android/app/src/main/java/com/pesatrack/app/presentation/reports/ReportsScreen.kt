@@ -50,6 +50,7 @@ import com.pesatrack.app.ui.theme.Background
 import com.pesatrack.app.ui.theme.Divider
 import com.pesatrack.app.ui.theme.Primary
 import com.pesatrack.app.ui.theme.PrimaryDark
+import com.pesatrack.app.ui.theme.StatusBarIcons
 import com.pesatrack.app.ui.theme.Surface
 import com.pesatrack.app.ui.theme.TextPrimary
 import com.pesatrack.app.ui.theme.TextSecondary
@@ -71,6 +72,8 @@ fun ReportsScreen(navController: NavController) {
         factory = ReportsViewModel.Factory(transactionRepository, categoryRepository)
     )
     val uiState by viewModel.uiState.collectAsState()
+
+    StatusBarIcons(darkIcons = false)
 
     Scaffold(
         bottomBar = { PesaBottomBar(navController) },

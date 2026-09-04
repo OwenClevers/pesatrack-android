@@ -57,6 +57,7 @@ import com.pesatrack.app.ui.theme.Divider
 import com.pesatrack.app.ui.theme.Expense
 import com.pesatrack.app.ui.theme.Primary
 import com.pesatrack.app.ui.theme.PrimaryDark
+import com.pesatrack.app.ui.theme.StatusBarIcons
 import com.pesatrack.app.ui.theme.Surface
 import com.pesatrack.app.ui.theme.TextPrimary
 import com.pesatrack.app.ui.theme.TextSecondary
@@ -78,6 +79,8 @@ fun AddTransactionScreen(navController: NavController, transactionId: Long? = nu
         factory = AddTransactionViewModel.Factory(repository, categoryRepository, transactionId)
     )
     val uiState by viewModel.uiState.collectAsState()
+
+    StatusBarIcons(darkIcons = false)
 
     LaunchedEffect(uiState.saveComplete) {
         if (uiState.saveComplete) {

@@ -36,6 +36,7 @@ import com.pesatrack.app.navigation.Screen
 import com.pesatrack.app.ui.theme.Background
 import com.pesatrack.app.ui.theme.Divider
 import com.pesatrack.app.ui.theme.PrimaryDark
+import com.pesatrack.app.ui.theme.StatusBarIcons
 import com.pesatrack.app.ui.theme.Surface
 import com.pesatrack.app.ui.theme.TextPrimary
 import com.pesatrack.app.ui.theme.components.EmptyState
@@ -52,7 +53,11 @@ fun TransactionsScreen(navController: NavController) {
     )
     val uiState by viewModel.uiState.collectAsState()
 
+    StatusBarIcons(darkIcons = false)
+
     Scaffold(
+        // No topBar here either -- see the identical comment in DashboardScreen.
+        containerColor = PrimaryDark,
         bottomBar = { PesaBottomBar(navController) }
     ) { paddingValues ->
         Column(

@@ -60,6 +60,7 @@ import com.pesatrack.app.ui.theme.FoodContentDark
 import com.pesatrack.app.ui.theme.LocalPesaTrackColors
 import com.pesatrack.app.ui.theme.Primary
 import com.pesatrack.app.ui.theme.PrimaryDark
+import com.pesatrack.app.ui.theme.StatusBarIcons
 import com.pesatrack.app.ui.theme.Surface
 import com.pesatrack.app.ui.theme.TextPrimary
 import com.pesatrack.app.ui.theme.TextSecondary
@@ -92,6 +93,8 @@ fun BudgetsScreen(navController: NavController) {
     val uiState by viewModel.uiState.collectAsState()
 
     var sheetTarget by remember { mutableStateOf<BudgetSheetTarget?>(null) }
+
+    StatusBarIcons(darkIcons = false)
 
     Scaffold(
         bottomBar = { PesaBottomBar(navController) },

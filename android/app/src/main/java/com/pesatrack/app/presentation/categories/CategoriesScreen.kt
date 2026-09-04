@@ -54,6 +54,7 @@ import com.pesatrack.app.ui.theme.Divider
 import com.pesatrack.app.ui.theme.Expense
 import com.pesatrack.app.ui.theme.Primary
 import com.pesatrack.app.ui.theme.PrimaryDark
+import com.pesatrack.app.ui.theme.StatusBarIcons
 import com.pesatrack.app.ui.theme.Surface
 import com.pesatrack.app.ui.theme.TextPrimary
 import com.pesatrack.app.ui.theme.TextSecondary
@@ -77,6 +78,8 @@ fun CategoriesScreen(navController: NavController) {
 
     var sheetTarget by remember { mutableStateOf<CategorySheetTarget?>(null) }
     var blockedMessage by remember { mutableStateOf<String?>(null) }
+
+    StatusBarIcons(darkIcons = false)
 
     Scaffold(
         bottomBar = { PesaBottomBar(navController) },

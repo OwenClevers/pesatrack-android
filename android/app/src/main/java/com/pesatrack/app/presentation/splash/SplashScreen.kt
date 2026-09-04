@@ -28,6 +28,7 @@ import com.pesatrack.app.core.OnboardingPreferences
 import com.pesatrack.app.navigation.Screen
 import com.pesatrack.app.ui.theme.Accent
 import com.pesatrack.app.ui.theme.PrimaryDark
+import com.pesatrack.app.ui.theme.StatusBarIcons
 import kotlinx.coroutines.delay
 
 @Composable
@@ -35,6 +36,8 @@ fun SplashScreen(
     navController: NavController
 ) {
     val context = LocalContext.current
+
+    StatusBarIcons(darkIcons = false)
 
     LaunchedEffect(Unit) {
         delay(Constants.SPLASH_DELAY)
