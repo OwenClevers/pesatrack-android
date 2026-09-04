@@ -88,8 +88,8 @@ fun PesaBottomBar(
                     BottomBarItem(
                         icon = Icons.Outlined.BarChart,
                         label = "Reports",
-                        selected = false,
-                        onClick = {}
+                        selected = currentRoute == Screen.Reports.route,
+                        onClick = { navController.navigateToTab(Screen.Reports.route) }
                     )
                     BottomBarItem(
                         icon = Icons.Outlined.Settings,

@@ -9,4 +9,5 @@ sealed class Screen(val route: String) {
         fun route(transactionId: Long) = "transaction_details/$transactionId"
     }
     object Budgets : Screen("budgets")
+    object Reports : Screen("reports")
 }
