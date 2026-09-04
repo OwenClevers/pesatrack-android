@@ -18,7 +18,7 @@ class MpesaSmsParserTest {
         val result = parser.parse(message)
 
         assertEquals(
-            MpesaSmsTransaction(
+            ParsedSmsTransaction(
                 transactionCode = "QGH7XXXXX1",
                 amount = 500.00,
                 counterparty = "JOHN KAMAU",
@@ -37,7 +37,7 @@ class MpesaSmsParserTest {
         val result = parser.parse(message)
 
         assertEquals(
-            MpesaSmsTransaction(
+            ParsedSmsTransaction(
                 transactionCode = "QGH7XXXXX2",
                 amount = 2500.00,
                 counterparty = "NAIROBI JAVA HOUSE",
@@ -56,7 +56,7 @@ class MpesaSmsParserTest {
         val result = parser.parse(message)
 
         assertEquals(
-            MpesaSmsTransaction(
+            ParsedSmsTransaction(
                 transactionCode = "QGH7XXXXX3",
                 amount = 1200.00,
                 counterparty = "KPLC PREPAID",
@@ -76,7 +76,7 @@ class MpesaSmsParserTest {
         val result = parser.parse(message)
 
         assertEquals(
-            MpesaSmsTransaction(
+            ParsedSmsTransaction(
                 transactionCode = "QGH7XXXXX4",
                 amount = 3000.00,
                 counterparty = "JOHN AGENT DOE",
@@ -95,7 +95,7 @@ class MpesaSmsParserTest {
         val result = parser.parse(message)
 
         assertEquals(
-            MpesaSmsTransaction(
+            ParsedSmsTransaction(
                 transactionCode = "QGH7XXXXX9",
                 amount = 1000.00,
                 counterparty = "JANE AGENT",
@@ -114,7 +114,7 @@ class MpesaSmsParserTest {
         val result = parser.parse(message)
 
         assertEquals(
-            MpesaSmsTransaction(
+            ParsedSmsTransaction(
                 transactionCode = "QGH7XXXXX5",
                 amount = 1500.00,
                 counterparty = "JANE DOE",
@@ -144,7 +144,7 @@ class MpesaSmsParserTest {
         val result = parser.parse(message)
 
         assertEquals(
-            MpesaSmsTransaction(
+            ParsedSmsTransaction(
                 transactionCode = "QGH7AIR0001",
                 amount = 100.00,
                 counterparty = "Airtime",
@@ -164,7 +164,7 @@ class MpesaSmsParserTest {
         val result = parser.parse(message)
 
         assertEquals(
-            MpesaSmsTransaction(
+            ParsedSmsTransaction(
                 transactionCode = "QGH7FUL0002",
                 amount = 150.00,
                 counterparty = "Fuliza M-PESA",
@@ -183,7 +183,7 @@ class MpesaSmsParserTest {
         val result = parser.parse(message)
 
         assertEquals(
-            MpesaSmsTransaction(
+            ParsedSmsTransaction(
                 transactionCode = "QGH7REV0003",
                 amount = 500.00,
                 counterparty = "JOHN KAMAU",
@@ -202,7 +202,7 @@ class MpesaSmsParserTest {
         val result = parser.parse(message)
 
         assertEquals(
-            MpesaSmsTransaction(
+            ParsedSmsTransaction(
                 transactionCode = "QGH7REF0004",
                 amount = 500.00,
                 counterparty = "NAIROBI JAVA HOUSE",
@@ -221,7 +221,7 @@ class MpesaSmsParserTest {
         val result = parser.parse(message)
 
         assertEquals(
-            MpesaSmsTransaction(
+            ParsedSmsTransaction(
                 transactionCode = "QGH7POC0005",
                 amount = 500.00,
                 counterparty = "JOHN'S SHOP",
@@ -298,7 +298,7 @@ class MpesaSmsParserTest {
         val result = parser.parse(message)
 
         assertEquals(
-            MpesaSmsTransaction(
+            ParsedSmsTransaction(
                 transactionCode = "QGH7TRC0010",
                 amount = 450.00,
                 counterparty = "CORNER SHOP",

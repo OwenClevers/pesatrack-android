@@ -8,6 +8,8 @@ import com.pesatrack.app.data.database.MIGRATION_2_3
 import com.pesatrack.app.data.database.MIGRATION_3_4
 import com.pesatrack.app.data.database.categorySeedCallback
 import com.pesatrack.app.data.repository.BudgetRepositoryImpl
+import com.pesatrack.app.data.sms.MpesaSmsParser
+import com.pesatrack.app.data.sms.SmsParser
 import com.pesatrack.app.data.sms.SmsReader
 import com.pesatrack.app.data.repository.CategoryRepositoryImpl
 import com.pesatrack.app.data.repository.TransactionRepositoryImpl
@@ -68,4 +70,9 @@ object AppModule {
 
     fun provideSmsReader(context: Context): SmsReader =
         SmsReader(context.applicationContext)
+
+    // Registered SmsParser implementations, one per supported sender. A bank
+    // parser is a future milestone -- adding it here (and nowhere else) is
+    // meant to be the whole job once it exists.
+    fun provideSmsParsers(): List<SmsParser> = listOf(MpesaSmsParser())
 }

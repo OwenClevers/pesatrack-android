@@ -5,21 +5,15 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-data class MpesaSmsTransaction(
-    val transactionCode: String,
-    val amount: Double,
-    val counterparty: String,
-    val timestamp: LocalDateTime,
-    val type: TransactionType
-)
-
 /**
- * Parses Safaricom M-Pesa confirmation SMS bodies into [MpesaSmsTransaction].
+ * Parses Safaricom M-Pesa confirmation SMS bodies into [ParsedSmsTransaction].
  * Pure Kotlin, no Android dependencies, so it's testable as a plain JVM unit.
  */
-class MpesaSmsParser {
+class MpesaSmsParser : SmsParser {
 
-    fun parse(message: String): MpesaSmsTransaction? {
+    override val senderPattern: String = "MPESA"
+
+    override fun parse(message: String): ParsedSmsTransaction? {
         val body = message.trim()
         if (body.isEmpty()) return null
 
@@ -30,7 +24,7 @@ class MpesaSmsParser {
         return null
     }
 
-    private fun toTransaction(match: MatchResult, type: TransactionType): MpesaSmsTransaction? {
+    private fun toTransaction(match: MatchResult, type: TransactionType): ParsedSmsTransaction? {
         val groups = match.groups as MatchNamedGroupCollection
 
         val code = groups[GROUP_CODE]?.value?.trim() ?: return null
@@ -49,7 +43,7 @@ class MpesaSmsParser {
         val counterparty = name.trim().trimEnd('.').replace(WHITESPACE_REGEX, " ")
         if (counterparty.isEmpty()) return null
 
-        return MpesaSmsTransaction(
+        return ParsedSmsTransaction(
             transactionCode = code,
             amount = amount,
             counterparty = counterparty,

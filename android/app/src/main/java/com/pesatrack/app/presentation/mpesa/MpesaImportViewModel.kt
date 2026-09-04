@@ -3,7 +3,7 @@ package com.pesatrack.app.presentation.mpesa
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.pesatrack.app.data.sms.MpesaSmsParser
+import com.pesatrack.app.data.sms.SmsParser
 import com.pesatrack.app.data.sms.SmsReader
 import com.pesatrack.app.domain.model.Category
 import com.pesatrack.app.domain.model.Transaction
@@ -19,11 +19,10 @@ import kotlinx.coroutines.launch
 
 class MpesaImportViewModel(
     private val smsReader: SmsReader,
+    private val parsers: List<SmsParser>,
     private val transactionRepository: TransactionRepository,
     private val categoryRepository: CategoryRepository
 ) : ViewModel() {
-
-    private val parser = MpesaSmsParser()
 
     private val _uiState = MutableStateFlow(MpesaImportUiState())
     val uiState: StateFlow<MpesaImportUiState> = _uiState.asStateFlow()
@@ -40,31 +39,37 @@ class MpesaImportViewModel(
             _uiState.update { it.copy(isImporting = true) }
 
             val categories = categoryRepository.getCategories().first()
-            val messages = smsReader.readMpesaMessages()
-            _uiState.update { it.copy(foundCount = messages.size) }
 
-            messages.forEach { sms ->
-                val parsed = parser.parse(sms.body)
-                if (parsed == null) {
-                    _uiState.update { it.copy(failedCount = it.failedCount + 1) }
-                    return@forEach
-                }
+            // One query + pass per registered parser, keyed by its own
+            // senderPattern -- adding a parser here is the only thing a new
+            // sender (e.g. a bank) needs, no change to this loop.
+            for (parser in parsers) {
+                val messages = smsReader.readMessages(parser.senderPattern)
+                _uiState.update { it.copy(foundCount = it.foundCount + messages.size) }
 
-                val transaction = Transaction(
-                    id = 0,
-                    amount = parsed.amount,
-                    type = parsed.type,
-                    categoryId = matchCategory(parsed.counterparty, categories),
-                    merchant = parsed.counterparty,
-                    description = null,
-                    transactionDate = parsed.timestamp,
-                    source = TransactionSource.MPESA_SMS
-                )
+                messages.forEach { sms ->
+                    val parsed = parser.parse(sms.body)
+                    if (parsed == null) {
+                        _uiState.update { it.copy(failedCount = it.failedCount + 1) }
+                        return@forEach
+                    }
 
-                val inserted = transactionRepository.importMpesaTransaction(transaction, parsed.transactionCode)
-                _uiState.update {
-                    if (inserted) it.copy(importedCount = it.importedCount + 1)
-                    else it.copy(duplicateCount = it.duplicateCount + 1)
+                    val transaction = Transaction(
+                        id = 0,
+                        amount = parsed.amount,
+                        type = parsed.type,
+                        categoryId = matchCategory(parsed.counterparty, categories),
+                        merchant = parsed.counterparty,
+                        description = null,
+                        transactionDate = parsed.timestamp,
+                        source = TransactionSource.MPESA_SMS
+                    )
+
+                    val inserted = transactionRepository.importMpesaTransaction(transaction, parsed.transactionCode)
+                    _uiState.update {
+                        if (inserted) it.copy(importedCount = it.importedCount + 1)
+                        else it.copy(duplicateCount = it.duplicateCount + 1)
+                    }
                 }
             }
 
@@ -74,12 +79,13 @@ class MpesaImportViewModel(
 
     class Factory(
         private val smsReader: SmsReader,
+        private val parsers: List<SmsParser>,
         private val transactionRepository: TransactionRepository,
         private val categoryRepository: CategoryRepository
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            MpesaImportViewModel(smsReader, transactionRepository, categoryRepository) as T
+            MpesaImportViewModel(smsReader, parsers, transactionRepository, categoryRepository) as T
     }
 }
 

@@ -12,12 +12,17 @@ data class SmsMessage(
 )
 
 /**
- * Reads M-Pesa confirmation messages from the device's SMS inbox content provider.
- * Requires the caller to already hold READ_SMS — this class does not request it.
+ * Reads SMS messages from a given sender out of the device's SMS inbox
+ * content provider. Requires the caller to already hold READ_SMS -- this
+ * class does not request it.
+ *
+ * Queries by sender rather than owning any sender-specific logic itself, so
+ * registering a new SmsParser (each of which declares its own
+ * [SmsParser.senderPattern]) doesn't require any change here.
  */
 class SmsReader(private val context: Context) {
 
-    suspend fun readMpesaMessages(): List<SmsMessage> = withContext(Dispatchers.IO) {
+    suspend fun readMessages(senderPattern: String): List<SmsMessage> = withContext(Dispatchers.IO) {
         val messages = mutableListOf<SmsMessage>()
 
         val projection = arrayOf(
@@ -30,7 +35,7 @@ class SmsReader(private val context: Context) {
             Telephony.Sms.Inbox.CONTENT_URI,
             projection,
             "${Telephony.Sms.ADDRESS} LIKE ?",
-            arrayOf("%MPESA%"),
+            arrayOf("%$senderPattern%"),
             "${Telephony.Sms.DATE} DESC"
         )?.use { cursor ->
             val idIndex = cursor.getColumnIndexOrThrow(Telephony.Sms._ID)
