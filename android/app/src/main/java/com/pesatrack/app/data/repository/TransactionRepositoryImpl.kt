@@ -32,6 +32,10 @@ class TransactionRepositoryImpl(
         )
     }
 
+    override suspend fun updateTransaction(transaction: Transaction) {
+        dao.insert(transaction.toEntity())
+    }
+
     override suspend fun deleteTransaction(id: Long) {
         dao.deleteById(id)
     }

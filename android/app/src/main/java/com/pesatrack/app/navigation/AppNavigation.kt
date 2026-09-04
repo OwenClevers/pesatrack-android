@@ -44,6 +44,14 @@ fun AppNavigation() {
             AddTransactionScreen(navController)
         }
 
+        composable(
+            route = Screen.EditTransaction.route,
+            arguments = listOf(navArgument("transactionId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val transactionId = backStackEntry.arguments?.getLong("transactionId") ?: return@composable
+            AddTransactionScreen(navController, transactionId)
+        }
+
         composable(Screen.Transactions.route) {
             TransactionsScreen(navController)
         }

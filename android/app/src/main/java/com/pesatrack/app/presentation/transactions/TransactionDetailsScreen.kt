@@ -54,6 +54,7 @@ import com.pesatrack.app.domain.model.Category
 import com.pesatrack.app.domain.model.Transaction
 import com.pesatrack.app.domain.model.TransactionSource
 import com.pesatrack.app.domain.model.TransactionType
+import com.pesatrack.app.navigation.Screen
 import com.pesatrack.app.ui.theme.Background
 import com.pesatrack.app.ui.theme.Divider
 import com.pesatrack.app.ui.theme.Expense
@@ -166,7 +167,7 @@ fun TransactionDetailsScreen(navController: NavController, transactionId: Long) 
                     horizontalArrangement = Arrangement.spacedBy(9.dp)
                 ) {
                     OutlinedButton(
-                        onClick = {},
+                        onClick = { navController.navigate(Screen.EditTransaction.route(transaction.id)) },
                         modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = Primary),
                         border = BorderStroke(1.dp, Primary)
