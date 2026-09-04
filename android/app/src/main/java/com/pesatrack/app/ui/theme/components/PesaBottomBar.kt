@@ -71,8 +71,12 @@ fun PesaBottomBar(
                     BottomBarItem(
                         icon = Icons.AutoMirrored.Outlined.List,
                         label = "Transactions",
-                        selected = false,
-                        onClick = {}
+                        selected = currentRoute == Screen.Transactions.route,
+                        onClick = {
+                            if (currentRoute != Screen.Transactions.route) {
+                                navController.navigate(Screen.Transactions.route)
+                            }
+                        }
                     )
 
                     Box(modifier = Modifier.width(FabSize))

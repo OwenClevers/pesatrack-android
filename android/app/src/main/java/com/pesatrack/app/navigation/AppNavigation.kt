@@ -7,6 +7,7 @@ import androidx.navigation.compose.rememberNavController
 import com.pesatrack.app.presentation.dashboard.DashboardScreen
 import com.pesatrack.app.presentation.splash.SplashScreen
 import com.pesatrack.app.presentation.transactions.AddTransactionScreen
+import com.pesatrack.app.presentation.transactions.TransactionsScreen
 
 @Composable
 fun AppNavigation() {
@@ -28,6 +29,10 @@ fun AppNavigation() {
 
         composable(Screen.AddTransaction.route) {
             AddTransactionScreen(navController)
+        }
+
+        composable(Screen.Transactions.route) {
+            TransactionsScreen(navController)
         }
     }
 }
