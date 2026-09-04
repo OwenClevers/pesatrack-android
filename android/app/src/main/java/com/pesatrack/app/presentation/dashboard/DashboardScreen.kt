@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ReceiptLong
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
-import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -72,33 +71,25 @@ fun DashboardScreen(navController: NavController) {
                     .background(PrimaryDark)
                     .padding(horizontal = 20.dp, vertical = 16.dp)
             ) {
-                Row(verticalAlignment = Alignment.Top) {
-                    Column(Modifier.weight(1f)) {
-                        Text(
-                            text = "Hello, Owen",
-                            style = MaterialTheme.typography.titleLarge,
-                            color = Color.White
-                        )
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = LocalDate.now().format(monthFormat),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color.White.copy(alpha = 0.82f)
-                            )
-                            Icon(
-                                imageVector = Icons.Outlined.KeyboardArrowDown,
-                                contentDescription = null,
-                                tint = Color.White.copy(alpha = 0.82f),
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                    }
-                    Icon(
-                        imageVector = Icons.Outlined.Notifications,
-                        contentDescription = "Notifications",
-                        tint = Color.White,
-                        modifier = Modifier.size(24.dp)
+                Column {
+                    Text(
+                        text = "Hello, Owen",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = Color.White
                     )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = LocalDate.now().format(monthFormat),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.White.copy(alpha = 0.82f)
+                        )
+                        Icon(
+                            imageVector = Icons.Outlined.KeyboardArrowDown,
+                            contentDescription = null,
+                            tint = Color.White.copy(alpha = 0.82f),
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
                 }
             }
 

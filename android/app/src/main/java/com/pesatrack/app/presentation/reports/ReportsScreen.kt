@@ -17,7 +17,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.ShowChart
-import androidx.compose.material.icons.outlined.IosShare
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.PieChart
 import androidx.compose.material3.Card
@@ -82,11 +81,6 @@ fun ReportsScreen(navController: NavController) {
                     navigationIcon = {
                         IconButton(onClick = { navController.popBackStack() }) {
                             Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
-                        }
-                    },
-                    actions = {
-                        IconButton(onClick = {}) {
-                            Icon(Icons.Outlined.IosShare, contentDescription = "Export")
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
