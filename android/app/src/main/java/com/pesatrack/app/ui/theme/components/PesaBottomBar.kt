@@ -94,7 +94,7 @@ fun PesaBottomBar(
         }
 
         FloatingActionButton(
-            onClick = {},
+            onClick = { navController.navigate(Screen.AddTransaction.route) },
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .offset(y = -(FabSize / 2))
