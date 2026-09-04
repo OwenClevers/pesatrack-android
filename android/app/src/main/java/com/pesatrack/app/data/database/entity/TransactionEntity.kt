@@ -7,7 +7,7 @@ import com.pesatrack.app.domain.model.TransactionType
 import java.time.LocalDateTime
 
 @Entity(tableName = "transactions")
-data class `TransactionEntity.kt`(
+data class TransactionEntity(
 
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,

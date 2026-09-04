@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PesaTrack — UI design spec v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --primary:#00A859; --primary-dark:#00703C; --secondary:#1EB980; --accent:#FFC107;
+  --expense:#E53935; --income:#43A047; --bg:#F7F8FA; --surface:#FFFFFF;
+  --text:#111827; --text-2:#6B7280; --hairline:#E9EBEF;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Poppins',system-ui,sans-serif;background:#0E1116;color:#E5E7EB;padding:34px 20px 70px;-webkit-font-smoothing:antialiased}
+.page{max-width:1560px;margin:0 auto}
+.head{max-width:760px;margin-bottom:34px}
+.head h1{font-size:26px;font-weight:600;letter-spacing:-.02em}
+.head p{font-size:13.5px;color:#9AA3AF;margin-top:9px;line-height:1.7}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:30px 24px}
+.cell{display:flex;flex-direction:column;align-items:center;gap:11px}
+.cap{font-size:12.5px;font-weight:500;color:#9AA3AF}
+
+svg.i{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+svg.i.sm{width:13px;height:13px}
+svg.i.lg{width:19px;height:19px}
+
+.phone{width:268px;height:556px;background:var(--bg);border-radius:22px;overflow:hidden;position:relative;display:flex;flex-direction:column;color:var(--text);box-shadow:0 0 0 1px rgba(255,255,255,.09)}
+.status{height:23px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 13px;font-size:9px;font-weight:500}
+.status .r{display:flex;gap:4px;align-items:center}
+.status .r svg{width:9px;height:9px;stroke-width:2.4}
+
+.bar{background:var(--primary-dark);color:#fff;flex:none;padding:2px 12px 12px;display:flex;align-items:center;gap:11px}
+.bar h2{font-size:13px;font-weight:500;flex:1;letter-spacing:.01em}
+.sub{background:var(--primary-dark);color:#fff;padding:0 12px 12px;font-size:9px;display:flex;align-items:center;gap:3px;opacity:.88}
+
+.body{flex:1;overflow:hidden;padding:12px;display:flex;flex-direction:column;gap:10px}
+.card{background:var(--surface);border-radius:16px;padding:12px}
+.lbl{font-size:8.5px;color:var(--text-2)}
+.amt{font-size:17px;font-weight:600;letter-spacing:-.015em;margin-top:1px}
+.row{display:flex;align-items:center;gap:9px}
+.between{display:flex;align-items:center;justify-content:space-between}
+.sec{font-size:10.5px;font-weight:600}
+.link{font-size:8.5px;color:var(--primary);font-weight:500}
+.t-name{font-size:9.5px;font-weight:500}
+.t-meta{font-size:7.5px;color:var(--text-2);margin-top:1.5px}
+.t-amt{font-size:9.5px;font-weight:600;margin-left:auto}
+.neg{color:var(--expense)}.pos{color:var(--income)}
+.ic{width:27px;height:27px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center}
+.ic.rd{border-radius:50%}
+.hr{height:1px;background:var(--hairline)}
+.chev{margin-left:auto;color:#B6BCC6}
+
+.nav{flex:none;background:var(--surface);height:47px;display:flex;align-items:center;justify-content:space-around;position:relative;border-top:1px solid var(--hairline)}
+.nav a{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:7px;color:var(--text-2);width:46px;text-decoration:none}
+.nav .on{color:var(--primary);font-weight:500}
+.fab{position:absolute;left:50%;top:-19px;transform:translateX(-50%);width:40px;height:40px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 5px 14px rgba(0,168,89,.42)}
+.fab svg{width:19px;height:19px;stroke-width:2.4}
+.spacer{width:46px;visibility:hidden}
+
+.field{margin-bottom:9px}
+.field .lbl{margin-bottom:4.5px;display:block}
+.input{background:var(--surface);border:1px solid var(--hairline);border-radius:10px;height:31px;display:flex;align-items:center;padding:0 10px;font-size:9.5px}
+.input.ph{color:#AEB4BE}
+.seg{display:flex;gap:7px}
+.seg div{flex:1;height:29px;border-radius:9px;display:flex;align-items:center;justify-content:center;gap:5px;font-size:9.5px;font-weight:500;border:1px solid var(--hairline);color:var(--text-2);background:var(--surface)}
+.seg .sel-e{background:var(--expense);border-color:var(--expense);color:#fff}
+.seg .sel-i{border-color:var(--primary);color:var(--primary)}
+.btn{height:33px;border-radius:11px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;gap:6px;font-size:10px;font-weight:500}
+.btn-o{background:transparent;border:1px solid var(--primary);color:var(--primary)}
+.btn-d{background:transparent;border:1px solid var(--expense);color:var(--expense)}
+
+.splash{flex:1;background:var(--primary-dark);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff}
+.spin{width:17px;height:17px;border-radius:50%;margin-top:26px;border:2px solid rgba(255,255,255,.22);border-top-color:#fff;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.spin{animation:none;border-top-color:rgba(255,255,255,.6)}}
+
+.onb{flex:1;background:var(--surface);display:flex;flex-direction:column;padding:12px}
+.skip{align-self:flex-end;font-size:9px;color:var(--text-2);font-weight:500}
+.art{flex:1;margin:10px 0 4px;border-radius:20px;background:#EDF7F1;display:flex;align-items:center;justify-content:center;padding:16px}
+.onb h3{font-size:14px;font-weight:600;text-align:center;margin:10px 0 7px}
+.onb p{font-size:9.5px;color:var(--text-2);text-align:center;line-height:1.7;padding:0 10px}
+.dots{display:flex;gap:5px;justify-content:center;margin:15px 0}
+.dots i{width:5px;height:5px;border-radius:50%;background:#DDE1E7}
+.dots i.on{width:15px;border-radius:3px;background:var(--primary)}
+
+.track{height:5px;border-radius:3px;background:#EDEFF3;overflow:hidden;margin-top:6px}
+.track i{display:block;height:100%;border-radius:3px}
+.pill{font-size:7.5px;font-weight:500;padding:2.5px 7px;border-radius:6px}
+.tile{flex:1;background:var(--bg);border-radius:12px;padding:9px}
+.sw{width:27px;height:15px;border-radius:8px;background:var(--primary);position:relative;margin-left:auto}
+.sw i{position:absolute;right:2px;top:2px;width:11px;height:11px;border-radius:50%;background:#fff}
+.legend{display:flex;align-items:center;gap:6px;font-size:8px;color:var(--text-2);margin-bottom:5.5px}
+.legend i{width:6px;height:6px;border-radius:2px}
+.legend b{margin-left:auto;color:var(--text);font-weight:500}
+
+.ds{margin-top:44px;background:var(--surface);color:var(--text);border-radius:20px;padding:26px;display:flex;flex-wrap:wrap;gap:36px}
+.ds h4{font-size:10px;font-weight:600;color:var(--text-2);margin-bottom:13px;letter-spacing:.08em;text-transform:uppercase}
+.sw-grid{display:flex;flex-wrap:wrap;gap:16px}
+.sw-item{display:flex;align-items:center;gap:9px}
+.chip{width:34px;height:34px;border-radius:10px;border:1px solid var(--hairline)}
+.sw-item b{display:block;font-size:11px;font-weight:500}
+.sw-item span{font-size:10px;color:var(--text-2);font-family:ui-monospace,monospace}
+.rule{font-size:11px;color:var(--text);line-height:2}
+.rule span{color:var(--text-2)}
+.catmap{display:flex;flex-wrap:wrap;gap:10px}
+.catmap div{display:flex;align-items:center;gap:6px;font-size:10px;background:var(--bg);border-radius:9px;padding:5px 9px}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+<symbol id="back" viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></symbol>
+<symbol id="more" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></symbol>
+<symbol id="plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+<symbol id="plusc" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 12h6"/><path d="M12 9v6"/></symbol>
+<symbol id="search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></symbol>
+<symbol id="filter" viewBox="0 0 24 24"><path d="M4 5h16"/><path d="M7 12h10"/><path d="M10 19h4"/></symbol>
+<symbol id="cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4"/><path d="M8 3v4"/><path d="M3 10h18"/></symbol>
+<symbol id="down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+<symbol id="home" viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></symbol>
+<symbol id="list" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8"/><path d="M8 12h8"/><path d="M8 16h5"/></symbol>
+<symbol id="chart" viewBox="0 0 24 24"><path d="M4 3v18h17"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-4"/></symbol>
+<symbol id="gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+<symbol id="cart" viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M3 4h2l2.4 11.2a1.5 1.5 0 0 0 1.5 1.2h8.6a1.5 1.5 0 0 0 1.5-1.2L21 8H6"/></symbol>
+<symbol id="fuel" viewBox="0 0 24 24"><path d="M3 22h11"/><path d="M4 9h9"/><path d="M13 22V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v17"/><path d="M13 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 4 0V10L18 6"/></symbol>
+<symbol id="food" viewBox="0 0 24 24"><path d="M4 3v6a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2V3"/><path d="M6.5 11v10"/><path d="M20 15V3a4 4 0 0 0-4 4v6a2 2 0 0 0 2 2z"/><path d="M18 15v6"/></symbol>
+<symbol id="wallet" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 11h18"/><circle cx="17" cy="15" r="1.3"/></symbol>
+<symbol id="trend" viewBox="0 0 24 24"><path d="M21 7 13.5 15 9 10.5 3 17"/><path d="M15 7h6v6"/></symbol>
+<symbol id="cash" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 10v4"/><path d="M18 10v4"/></symbol>
+<symbol id="bag" viewBox="0 0 24 24"><path d="M6 3 3.5 7v12a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2V7L18 3z"/><path d="M3.5 7h17"/><path d="M15.5 11a3.5 3.5 0 0 1-7 0"/></symbol>
+<symbol id="bolt" viewBox="0 0 24 24"><path d="M13 3 4 14h7l-1 7 9-11h-7z"/></symbol>
+<symbol id="film" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 4v16"/><path d="M16 4v16"/><path d="M3 12h18"/></symbol>
+<symbol id="bus" viewBox="0 0 24 24"><path d="M4 17V7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10"/><path d="M3 17h18"/><path d="M4 11h16"/><circle cx="7.5" cy="19" r="1.3"/><circle cx="16.5" cy="19" r="1.3"/></symbol>
+<symbol id="pulse" viewBox="0 0 24 24"><path d="M22 12h-4l-3 8L9 4l-3 8H2"/></symbol>
+<symbol id="cap" viewBox="0 0 24 24"><path d="M2 9l10-5 10 5-10 5z"/><path d="M22 9v6"/><path d="M6 11.5V17c3 2.6 9 2.6 12 0v-5.5"/></symbol>
+<symbol id="file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h4"/></symbol>
+<symbol id="msg" viewBox="0 0 24 24"><path d="M21 14a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2z"/><path d="M8 8h9"/><path d="M8 11.5h6"/></symbol>
+<symbol id="user" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="3.6"/></symbol>
+<symbol id="card" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></symbol>
+<symbol id="moon" viewBox="0 0 24 24"><path d="M12 3a6.5 6.5 0 0 0 9 9 9 9 0 1 1-9-9z"/></symbol>
+<symbol id="cloud" viewBox="0 0 24 24"><path d="M17.5 19H9a6 6 0 1 1 5.7-7.9h2.8a4 4 0 0 1 0 7.9z"/></symbol>
+<symbol id="swap" viewBox="0 0 24 24"><path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/></symbol>
+<symbol id="lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/></symbol>
+<symbol id="info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4.5"/><path d="M12 8.2h.01"/></symbol>
+<symbol id="share" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m8 10 4 4 4-4"/><path d="M12 14V3"/></symbol>
+<symbol id="signal" viewBox="0 0 24 24"><path d="M4 20V16"/><path d="M9 20V12"/><path d="M14 20V8"/><path d="M19 20V4"/></symbol>
+<symbol id="wifi" viewBox="0 0 24 24"><path d="M5 12.5a10 10 0 0 1 14 0"/><path d="M8.5 16a5.5 5.5 0 0 1 7 0"/><path d="M12 19.5h.01"/></symbol>
+<symbol id="batt" viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2.5"/><path d="M22 11v2"/></symbol>
+<symbol id="check" viewBox="0 0 24 24"><path d="m5 13 4 4L19 7"/></symbol>
+</defs></svg>
+
+<div class="page">
+<div class="head">
+  <h1>PesaTrack — UI design spec v2</h1>
+  <p>All 13 screens on the frozen palette, Poppins type scale, and a single stroke-icon system at 1.9px weight. This file is the visual source of truth for Compose. Every icon here maps to a Material Symbols outlined equivalent listed in the design-system strip below.</p>
+</div>
+
+<div class="grid">
+
+<div class="cell">
+  <div class="phone">
+    <div class="splash">
+      <svg viewBox="0 0 64 56" style="width:74px;height:64px" aria-hidden="true">
+        <rect x="0" y="0" width="64" height="56" rx="17" fill="#fff"/>
+        <path d="M18 44V13h9.5a8.5 8.5 0 0 1 0 17H18" fill="none" stroke="#00703C" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="34" y="34" width="5" height="10" rx="2.5" fill="#00A859"/>
+        <rect x="42" y="27" width="5" height="17" rx="2.5" fill="#00A859"/>
+        <rect x="50" y="19" width="5" height="25" rx="2.5" fill="#FFC107"/>
+      </svg>
+      <div style="font-size:19px;font-weight:600;letter-spacing:-.015em;margin-top:15px">PesaTrack</div>
+      <div style="font-size:10px;color:var(--accent);margin-top:4px">Track every shilling.</div>
+      <div class="spin"></div>
+    </div>
+  </div>
+  <div class="cap">1 &middot; Splash</div>
+</div>
+
+<div class="cell">
+  <div class="phone">
+    <div class="status" style="background:#fff"><span>9:41</span><span class="r"><svg class="i"><use href="#signal"/></svg><svg class="i"><use href="#wifi"/></svg><svg class="i"><use href="#batt"/></svg></span></div>
+    <div class="onb">
+      <div class="skip">Skip</div>
+      <div class="art">
+        <svg viewBox="0 0 120 88" style="width:100%;max-height:132px" aria-hidden="true">
+          <rect x="8" y="10" width="104" height="68" rx="9" fill="#fff"/>
+          <rect x="18" y="50" width="12" height="19" rx="3" fill="#C7EBD8"/>
+          <rect x="36" y="40" width="12" height="29" rx="3" fill="#8FDCB8"/>
+          <rect x="54" y="28" width="12" height="41" rx="3" fill="#00A859"/>
+          <rect x="72" y="36" width="12" height="33" rx="3" fill="#8FDCB8"/>
+          <rect x="90" y="20" width="12" height="49" rx="3" fill="#FFC107"/>
+          <path d="M20 40 42 30 60 20 84 26 100 12" fill="none" stroke="#00703C" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="100" cy="12" r="4" fill="#00703C"/>
+        </svg>
+      </div>
+      <h3>Welcome to PesaTrack</h3>
+      <p>Take control of your money. Track, analyse and grow your finances with confidence.</p>
+      <div class="dots"><i class="on"></i><i></i><i></i></div>
+      <div class="btn">Next</div>
+    </div>
+  </div>
+  <div class="cap">2 &middot; Onboarding 1</div>
+</div>
+
+<div class="cell">
+  <div class="phone">
+    <div class="status" style="background:#fff"><span>9:41</span><span class="r"><svg class="i"><use href="#signal"/></svg><svg class="i"><use href="#wifi"/></svg><svg class="i"><use href="#batt"/></svg></span></div>
+    <div class="onb">
+      <div class="skip">Skip</div>
+      <div class="art">
+        <svg viewBox="0 0 120 88" style="width:100%;max-height:132px" aria-hidden="true">
+          <rect x="30" y="6" width="46" height="76" rx="9" fill="#fff"/>
+          <rect x="36" y="16" width="34" height="9" rx="4.5" fill="#E3F3EA"/>
+          <rect x="36" y="30" width="26" height="9" rx="4.5" fill="#E3F3EA"/>
+          <rect x="36" y="44" width="34" height="9" rx="4.5" fill="#E3F3EA"/>
+          <rect x="36" y="58" width="20" height="9" rx="4.5" fill="#E3F3EA"/>
+          <path d="M78 22h26a5 5 0 0 1 5 5v16a5 5 0 0 1-5 5H92l-7 7v-7h-7a5 5 0 0 1-5-5V27a5 5 0 0 1 5-5z" fill="#00A859"/>
+          <path d="M84 35h14" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
+          <path d="M84 41h9" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
+          <circle cx="34" cy="72" r="11" fill="#00703C"/>
+          <rect x="29.5" y="70" width="9" height="7" rx="2" fill="#fff"/>
+          <path d="M31.5 70v-2a2.5 2.5 0 0 1 5 0v2" fill="none" stroke="#fff" stroke-width="1.8"/>
+        </svg>
+      </div>
+      <h3>Import M-Pesa SMS</h3>
+      <p>Automatically import and categorise your M-Pesa transactions.</p>
+      <div class="dots"><i></i><i class="on"></i><i></i></div>
+      <div class="btn">Next</div>
+    </div>
+  </div>
+  <div class="cap">3 &middot; Onboarding 2</div>
+</div>
+
+<div class="cell">
+  <div class="phone">
+    <div class="status" style="background:#fff"><span>9:41</span><span class="r"><svg class="i"><use href="#signal"/></svg><svg class="i"><use href="#wifi"/></svg><svg class="i"><use href="#batt"/></svg></span></div>
+    <div class="onb">
+      <div class="skip">Skip</div>
+      <div class="art">
+        <svg viewBox="0 0 120 88" style="width:100%;max-height:132px" aria-hidden="true">
+          <rect x="8" y="8" width="104" height="72" rx="9" fill="#fff"/>
+          <path d="M42 44a20 20 0 0 1 20-20v20z" fill="#00A859"/>
+          <path d="M62 24a20 20 0 0 1 17.3 30L62 44z" fill="#FFC107"/>
+          <path d="M79.3 54A20 20 0 1 1 42 44h20z" fill="#00703C"/>
+          <circle cx="62" cy="44" r="9" fill="#fff"/>
+          <rect x="18" y="18" width="16" height="4" rx="2" fill="#DDE4E9"/>
+          <rect x="88" y="66" width="16" height="4" rx="2" fill="#DDE4E9"/>
+        </svg>
+      </div>
+      <h3>Set budgets</h3>
+      <p>Create budgets for categories and get alerts when you are nearing your limits.</p>
+      <div class="dots"><i></i><i></i><i class="on"></i></div>
+      <div class="btn">Get started</div>
+    </div>
+  </div>
+  <div class="cap">4 &middot; Onboarding 3</div>
+</div>
+
+<div class="cell">
+  <div class="phone">
+    <div class="status" style="background:var(--primary-dark);color:#fff"><span>9:41</span><span class="r"><svg class="i"><use href="#signal"/></svg><svg class="i"><use href="#wifi"/></svg><svg class="i"><use href="#batt"/></svg></span></div>
+    <div class="bar" style="align-items:flex-start">
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:600">Hello, Owen</div>
+        <div style="font-size:9px;opacity:.82;margin-top:2px;display:flex;align-items:center;gap:3px">July 2026 <svg class="i sm"><use href="#down"/></svg></div>
+      </div>
+      <svg class="i lg"><use href="#bell"/></svg>
+    </div>
+    <div class="body" style="padding-top:10px">
+      <div class="card" style="padding:0">
+        <div style="padding:11px 12px" class="between">
+          <div><div class="lbl">Today's spending</div><div class="amt">KSh 1,850</div></div>
+          <div class="ic" style="background:#FDECEA;color:var(--expense)"><svg class="i"><use href="#cart"/></svg></div>
+        </div>
+        <div class="hr"></div>
+        <div style="padding:11px 12px" class="between">
+          <div><div class="lbl">Income this month</div><div class="amt" style="color:var(--income)">KSh 145,000</div></div>
+          <div class="ic" style="background:#E8F5E9;color:var(--income)"><svg class="i"><use href="#trend"/></svg></div>
+        </div>
+        <div class="hr"></div>
+        <div style="padding:11px 12px" class="between">
+          <div><div class="lbl">Remaining budget</div><div class="amt" style="color:var(--primary)">KSh 23,150</div></div>
+          <div class="ic" style="background:#FFF8E1;color:#A67C00"><svg class="i"><use href="#wallet"/></svg></div>
+        </div>
+      </div>
+      <div class="between" style="margin-top:2px"><span class="sec">Recent transactions</span><span class="link">See all</span></div>
+      <div class="card" style="padding:8px 12px">
+        <div class="row" style="padding:5.5px 0">
+          <div class="ic" style="background:#FFF8E1;color:#A67C00"><svg class="i"><use href="#cart"/></svg></div>
+          <div><div class="t-name">Naivas Supermarket</div><div class="t-meta">Today &middot; 10:30 AM</div></div>
+          <div class="t-amt neg">- KSh 500</div>
+        </div>
+        <div class="hr"></div>
+        <div class="row" style="padding:5.5px 0">
+          <div class="ic" style="background:#E8F5E9;color:var(--income)"><svg class="i"><use href="#fuel"/></svg></div>
+          <div><div class="t-name">Fuel &mdash; Total Energies</div><div class="t-meta">Today &middot; 08:15 AM</div></div>
+          <div class="t-amt neg">- KSh 2,500</div>
+        </div>
+        <div class="hr"></div>
+        <div class="row" style="padding:5.5px 0">
+          <div class="ic" style="background:#E8F5E9;color:var(--income)"><svg class="i"><use href="#cash"/></svg></div>
+          <div><div class="t-name">Salary &mdash; Safaricom</div><div class="t-meta">22 Jul 2026</div></div>
+          <div class="t-amt pos">+ KSh 95,000</div>
+        </div>
+      </div>
+    </div>
+    <div class="nav">
+      <div class="fab"><svg class="i"><use href="#plus"/></svg></div>
+      <a class="on"><svg class="i lg"><use href="#home"/></svg><span>Home</span></a>
+      <a><svg class="i lg"><use href="#list"/></svg><span>Transactions</span></a>
+      <div class="spacer"></div>
+      <a><svg class="i lg"><use href="#chart"/></svg><span>Reports</span></a>
+      <a><svg class="i lg"><use href="#gear"/></svg><span>Settings</span></a>
+    </div>
+  </div>
+  <div class="cap">5 &middot; Dashboard (Home)</div>
+</div>
+
+<div class="cell">
+  <div class="phone">
+    <div class="status" style="background:var(--primary-dark);color:#fff"><span>9:41</span><span class="r"><svg class="i"><use href="#signal"/></svg><svg class="i"><use href="#wifi"/></svg><svg class="i"><use href="#batt"/></svg></span></div>
+    <div class="bar"><svg class="i lg"><use href="#back"/></svg><h2>Transactions</h2></div>
+    <div style="background:var(--primary-dark);padding:0 12px 12px" class="row">
+      <div style="flex:1;background:rgba(255,255,255,.16);border-radius:10px;height:29px;display:flex;align-items:center;gap:7px;padding:0 10px;font-size:9px;color:rgba(255,255,255,.8)"><svg class="i sm"><use href="#search"/></svg> Search transactions</div>
+      <span style="color:#fff"><svg class="i lg"><use href="#filter"/></svg></span>
+    </div>
+    <div class="body" style="padding-top:10px">
+      <div style="font-size:9px;font-weight:600">Today</div>
+      <div class="card" style="padding:8px 12px">
+        <div class="row" style="padding:5.5px 0">
+          <div class="ic" style="background:#E8F5E9;color:var(--income)"><svg class="i"><use href="#fuel"/></svg></div>
+          <div><div class="t-name">Fuel &mdash; Total Energies</div><div class="t-meta">10:30 AM</div></div>
+          <div class="t-amt neg">- KSh 2,500</div>
+        </div>
+        <div class="hr"></div>
+        <div class="row" style="padding:5.5px 0">
+          <div class="ic" style="background:#FFF8E1;color:#A67C00"><svg class="i"><use href="#cart"/></svg></div>
+          <div><div class="t-name">Naivas Supermarket</div><div class="t-meta">08:15 AM</div></div>
+          <div class="t-amt neg">- KSh 500</div>
+        </div>
+        <div class="hr"></div>
+        <div class="row" style="padding:5.5px 0">
+          <div class="ic" style="background:#FFF8E1;color:#A67C00"><svg class="i"><use href="#food"/></svg></div>
+          <div><div class="t-name">Chapati &amp; Co</div><div class="t-meta">07:45 AM</div></div>
+          <div class="t-amt neg">- KSh 300</div>
+        </div>
+      </div>
+      <div style="font-size:9px;font-weight:600;margin-top:2px">Yesterday</div>
+      <div class="card" style="padding:8px 12px">
+        <div class="row" style="padding:5.5px 0">
+          <div class="ic" style="background:#E8F5E9;color:var(--income)"><svg class="i"><use href="#cash"/></svg></div>
+          <div><div class="t-name">Salary &mdash; Safaricom</div><div class="t-meta">22 Jul 2026</div></div>
+          <div class="t-amt pos">+ KSh 95,000</div>
+        </div>
+        <div class="hr"></div>
+        <div class="row" style="padding:5.5px 0">
+          <div class="ic" style="background:#FFF8E1;color:#A67C00"><svg class="i"><use href="#food"/></svg></div>
+          <div><div class="t-name">Restaurant</div><div class="t-meta">22 Jul 2026</div></div>
+          <div class="t-amt neg">- KSh 1,200</div>
+        </div>
+      </div>
+    </div>
+    <div class="nav">
+      <div class="fab"><svg class="i"><use href="#plus"/></svg></div>
+      <a><svg class="i lg"><use href="#home"/></svg><span>Home</span></a>
+      <a class="on"><svg class="i lg"><use href="#list"/></svg><span>Transactions</span></a>
+      <div class="spacer"></div>
+      <a><svg class="i lg"><use href="#chart"/></svg><span>Reports</span></a>
+      <a><svg class="i lg"><use href="#gear"/></svg><span>Settings</span></a>
+    </div>
+  </div>
+  <div class="cap">6 &middot; Transactions</div>
+</div>
+
+<div class="cell">
+  <div class="phone">
+    <div class="status" style="background:var(--primary-dark);color:#fff"><span>9:41</span><span class="r"><svg class="i"><use href="#signal"/></svg><svg class="i"><use href="#wifi"/></svg><svg class="i"><use href="#batt"/></svg></span></div>
+    <div class="bar"><svg class="i lg"><use href="#back"/></svg><h2>Add transaction</h2></div>
+    <div class="body" style="background:var(--surface);padding-top:14px">
+      <div class="field"><span class="lbl">Amount</span><div class="input ph">KSh 0.00</div></div>
+      <div class="field"><span class="lbl">Type</span>
+        <div class="seg"><div class="sel-e"><svg class="i sm"><use href="#cart"/></svg>Expense</div><div class="sel-i"><svg class="i sm"><use href="#trend"/></svg>Income</div></div>
+      </div>
+      <div class="field"><span class="lbl">Category</span><div class="input between"><span class="row" style="gap:7px"><svg class="i sm" style="color:#A67C00"><use href="#food"/></svg>Food</span><svg class="i sm" style="color:#AEB4BE"><use href="#down"/></svg></div></div>
+      <div class="field"><span class="lbl">Merchant</span><div class="input">Naivas Supermarket</div></div>
+      <div class="field"><span class="lbl">Description (optional)</span><div class="input">Groceries</div></div>
+      <div class="field"><span class="lbl">Date</span><div class="input between"><span>23 Jul 2026</span><svg class="i sm" style="color:var(--primary)"><use href="#cal"/></svg></div></div>
+      <div class="btn" style="margin-top:4px"><svg class="i sm"><use href="#check"/></svg>Save transaction</div>
+    </div>
+  </div>
+  <div class="cap">7 &middot; Add transaction</div>
+</div>
+
+<div class="cell">
+  <div class="phone">
+    <div class="status" style="background:var(--primary-dark);color:#fff"><span>9:41</span><span class="r"><svg class="i"><use href="#signal"/></svg><svg class="i"><use href="#wifi"/></svg><svg class="i"><use href="#batt"/></svg></span></div>
+    <div class="bar"><svg class="i lg"><use href="#back"/></svg><h2>Transaction details</h2><svg class="i lg"><use href="#more"/></svg></div>
+    <div class="body" style="padding-top:14px">
+      <div class="card" style="padding:17px 12px 12px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
+          <div class="ic rd" style="width:40px;height:40px;background:#FFF8E1;color:#A67C00"><svg class="i lg"><use href="#cart"/></svg></div>
+          <div class="lbl" style="margin-top:2px">Expense</div>
+          <div style="font-size:12px;font-weight:500">Naivas Supermarket</div>
+          <div style="font-size:20px;font-weight:600;color:var(--expense);letter-spacing:-.02em">- KSh 500</div>
+        </div>
+        <div class="hr" style="margin:15px 0 3px"></div>
+        <div class="between" style="padding:7px 0"><span class="lbl">Category</span><span class="row" style="gap:6px;font-size:9.5px;font-weight:500"><svg class="i sm" style="color:#A67C00"><use href="#food"/></svg>Food</span></div>
+        <div class="hr"></div>
+        <div class="between" style="padding:7px 0"><span class="lbl">Date</span><span style="font-size:9.5px;font-weight:500">23 Jul 2026 &middot; 10:30 AM</span></div>
+        <div class="hr"></div>
+        <div class="between" style="padding:7px 0"><span class="lbl">Payment method</span><span class="row" style="gap:6px;font-size:9.5px;font-weight:500"><svg class="i sm" style="color:var(--text-2)"><use href="#cash"/></svg>Cash</span></div>
+        <div class="hr"></div>
+        <div class="between" style="padding:7px 0"><span class="lbl">Description</span><span style="font-size:9.5px;font-weight:500">Groceries</span></div>
+        <div class="hr"></div>
+        <div class="between" style="padding:7px 0"><span class="lbl">Source</span><span class="pill" style="background:#E8F5E9;color:#1B5E20">Manually added</span></div>
+      </div>
+      <div class="row" style="gap:9px;margin-top:auto">
+        <div class="btn btn-o" style="flex:1">Edit</div>
+        <div class="btn btn-d" style="flex:1">Delete</div>
+      </div>
+    </div>
+  </div>
+  <div class="cap">8 &middot; Transaction details</div>
+</div>
+
+<div class="cell">
+  <div class="phone">
+    <div class="status" style="background:var(--primary-dark);color:#fff"><span>9:41</span><span class="r"><svg class="i"><use href="#signal"/></svg><svg class="i"><use href="#wifi"/></svg><svg class="i"><use href="#batt"/></svg></span></div>
+    <div class="bar"><svg class="i lg"><use href="#back"/></svg><h2>Budgets</h2><svg class="i lg"><use href="#plusc"/></svg></div>
+    <div class="sub">July 2026 <svg class="i sm"><use href="#down"/></svg></div>
+    <div class="body" style="padding-top:10px;gap:8px">
+      <div class="card" style="padding:10px 12px">
+        <div class="row"><div class="ic" style="background:#FFF8E1;color:#A67C00"><svg class="i"><use href="#food"/></svg></div>
+          <div style="flex:1"><div class="t-name">Food</div><div class="t-meta">KSh 7,500 of KSh 10,000</div></div>
+          <div style="font-size:9.5px;font-weight:600;color:#A67C00">75%</div></div>
+        <div class="track"><i style="width:75%;background:var(--accent)"></i></div>
+      </div>
+      <div class="card" style="padding:10px 12px">
+        <div class="row"><div class="ic" style="background:#E8F5E9;color:var(--income)"><svg class="i"><use href="#fuel"/></svg></div>
+          <div style="flex:1"><div class="t-name">Fuel</div><div class="t-meta">KSh 4,000 of KSh 10,000</div></div>
+          <div style="font-size:9.5px;font-weight:600;color:var(--primary)">40%</div></div>
+        <div class="track"><i style="width:40%;background:var(--primary)"></i></div>
+      </div>
+      <div class="card" style="padding:10px 12px">
+        <div class="row"><div class="ic" style="background:#EDE7F6;color:#5E35B1"><svg class="i"><use href="#film"/></svg></div>
+          <div style="flex:1"><div class="t-name">Entertainment</div><div class="t-meta">KSh 1,000 of KSh 5,000</div></div>
+          <div style="font-size:9.5px;font-weight:600;color:var(--primary)">20%</div></div>
+        <div class="track"><i style="width:20%;background:var(--primary)"></i></div>
+      </div>
+      <div class="card" style="padding:10px 12px">
+        <div class="row"><div class="ic" style="background:#E3F2FD;color:#1565C0"><svg class="i"><use href="#bolt"/></svg></div>
+          <div style="flex:1"><div class="t-name">Utilities</div><div class="t-meta">KSh 3,200 of KSh 5,000</div></div>
+          <div style="font-size:9.5px;font-weight:600;color:#A67C00">64%</div></div>
+        <div class="track"><i style="width:64%;background:var(--accent)"></i></div>
+      </div>
+      <div class="card" style="padding:10px 12px">
+        <div class="row"><div class="ic" style="background:#FCE4EC;color:#C2185B"><svg class="i"><use href="#bag"/></svg></div>
+          <div style="flex:1"><div class="t-name">Shopping</div><div class="t-meta">KSh 7,400 of KSh 8,000</div></div>
+          <div style="font-size:9.5px;font-weight:600;color:var(--expense)">93%</div></div>
+        <div class="track"><i style="width:93%;background:var(--expense)"></i></div>
+      </div>
+    </div>
+    <div class="nav">
+      <a><svg class="i lg"><use href="#home"/></svg><span>Home</span></a>
+      <a><svg class="i lg"><use href="#list"/></svg><span>Transactions</span></a>
+      <a><svg class="i lg"><use href="#chart"/></svg><span>Reports</span></a>
+      <a><svg class="i lg"><use href="#gear"/></svg><span>Settings</span></a>
+    </div>
+  </div>
+  <div class="cap">9 &middot; Budgets</div>
+</div>
+
+<div class="cell">
+  <div class="phone">
+    <div class="status" style="background:var(--primary-dark);color:#fff"><span>9:41</span><span class="r"><svg class="i"><use href="#signal"/></svg><svg class="i"><use href="#wifi"/></svg><svg class="i"><use href="#batt"/></svg></span></div>
+    <div class="bar"><svg class="i lg"><use href="#back"/></svg><h2>Reports</h2><svg class="i lg"><use href="#share"/></svg></div>
+    <div class="sub">This month <svg class="i sm"><use href="#down"/></svg></div>
+    <div class="body" style="padding-top:10px">
+      <div class="card">
+        <div class="sec" style="margin-bottom:10px">Expenses overview</div>
+        <div class="row" style="gap:14px">
+          <div style="width:86px;height:86px;border-radius:50%;flex:none;background:conic-gradient(#00703C 0 40%,#00A859 40% 65%,#FFC107 65% 80%,#1565C0 80% 90%,#B6BCC6 90% 100%);display:flex;align-items:center;justify-content:center">
+            <div style="width:56px;height:56px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center">
+              <span style="font-size:7px;color:var(--text-2)">KSh</span>
+              <span style="font-size:11.5px;font-weight:600;line-height:1.1;letter-spacing:-.01em">36,800</span>
+              <span style="font-size:6.5px;color:var(--text-2)">total</span>
+            </div>
+          </div>
+          <div style="flex:1">
+            <div class="legend"><i style="background:#00703C"></i>Food<b>40%</b></div>
+            <div class="legend"><i style="background:#00A859"></i>Fuel<b>25%</b></div>
+            <div class="legend"><i style="background:#FFC107"></i>Shopping<b>15%</b></div>
+            <div class="legend"><i style="background:#1565C0"></i>Utilities<b>10%</b></div>
+            <div class="legend" style="margin-bottom:0"><i style="background:#B6BCC6"></i>Other<b>10%</b></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="between" style="margin-bottom:7px"><span class="sec">Daily trend</span><span class="lbl">Jul 2026</span></div>
+        <svg viewBox="0 0 210 74" style="width:100%;height:76px" aria-hidden="true">
+          <line x1="16" y1="6" x2="208" y2="6" stroke="#EDEFF3" stroke-width="1"/>
+          <line x1="16" y1="34" x2="208" y2="34" stroke="#EDEFF3" stroke-width="1"/>
+          <line x1="16" y1="62" x2="208" y2="62" stroke="#EDEFF3" stroke-width="1"/>
+          <text x="0" y="9" font-size="6" fill="#9CA3AF" font-family="Poppins">6K</text>
+          <text x="0" y="37" font-size="6" fill="#9CA3AF" font-family="Poppins">3K</text>
+          <text x="2" y="65" font-size="6" fill="#9CA3AF" font-family="Poppins">0</text>
+          <path d="M20 48 48 31 76 41 104 20 132 34 160 24 188 13 204 26" fill="none" stroke="#00A859" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="188" cy="13" r="3" fill="#00A859" stroke="#fff" stroke-width="1.6"/>
+        </svg>
+        <div class="between" style="font-size:6.5px;color:var(--text-2);padding-left:16px"><span>1 Jul</span><span>8 Jul</span><span>15 Jul</span><span>22 Jul</span><span>29 Jul</span></div>
+      </div>
+    </div>
+    <div class="nav">
+      <a><svg class="i lg"><use href="#home"/></svg><span>Home</span></a>
+      <a><svg class="i lg"><use href="#list"/></svg><span>Transactions</span></a>
+      <a class="on"><svg class="i lg"><use href="#chart"/></svg><span>Reports</span></a>
+      <a><svg class="i lg"><use href="#gear"/></svg><span>Settings</span></a>
+    </div>
+  </div>
+  <div class="cap">10 &middot; Reports</div>
+</div>
+
+<div class="cell">
+  <div class="phone">
+    <div class="status" style="background:var(--primary-dark);color:#fff"><span>9:41</span><span class="r"><svg class="i"><use href="#signal"/></svg><svg class="i"><use href="#wifi"/></svg><svg class="i"><use href="#batt"/></svg></span></div>
+    <div class="bar"><svg class="i lg"><use href="#back"/></svg><h2>Categories</h2><svg class="i lg"><use href="#plusc"/></svg></div>
+    <div class="body" style="padding-top:8px;gap:0;background:var(--surface)">
+      <div class="row" style="padding:8px 0"><div class="ic rd" style="background:#FFF8E1;color:#A67C00"><svg class="i"><use href="#food"/></svg></div><span class="t-name">Food</span><svg class="i chev"><use href="#right"/></svg></div>
+      <div class="hr"></div>
+      <div class="row" style="padding:8px 0"><div class="ic rd" style="background:#E8F5E9;color:var(--income)"><svg class="i"><use href="#fuel"/></svg></div><span class="t-name">Fuel</span><svg class="i chev"><use href="#right"/></svg></div>
+      <div class="hr"></div>
+      <div class="row" style="padding:8px 0"><div class="ic rd" style="background:#FCE4EC;color:#C2185B"><svg class="i"><use href="#bag"/></svg></div><span class="t-name">Shopping</span><svg class="i chev"><use href="#right"/></svg></div>
+      <div class="hr"></div>
+      <div class="row" style="padding:8px 0"><div class="ic rd" style="background:#E3F2FD;color:#1565C0"><svg class="i"><use href="#bolt"/></svg></div><span class="t-name">Utilities</span><svg class="i chev"><use href="#right"/></svg></div>
+      <div class="hr"></div>
+      <div class="row" style="padding:8px 0"><div class="ic rd" style="background:#EDE7F6;color:#5E35B1"><svg class="i"><use href="#film"/></svg></div><span class="t-name">Entertainment</span><svg class="i chev"><use href="#right"/></svg></div>
+      <div class="hr"></div>
+      <div class="row" style="padding:8px 0"><div class="ic rd" style="background:#E0F2F1;color:#00796B"><svg class="i"><use href="#bus"/></svg></div><span class="t-name">Transport</span><svg class="i chev"><use href="#right"/></svg></div>
+      <div class="hr"></div>
+      <div class="row" style="padding:8px 0"><div class="ic rd" style="background:#FDECEA;color:var(--expense)"><svg class="i"><use href="#pulse"/></svg></div><span class="t-name">Medical</span><svg class="i chev"><use href="#right"/></svg></div>
+      <div class="hr"></div>
+      <div class="row" style="padding:8px 0"><div class="ic rd" style="background:#E8EAF6;color:#3949AB"><svg class="i"><use href="#cap"/></svg></div><span class="t-name">Education</span><svg class="i chev"><use href="#right"/></svg></div>
+      <div class="hr"></div>
+      <div class="row" style="padding:8px 0"><div class="ic rd" style="background:#F1F2F4;color:#5F6570"><svg class="i"><use href="#file"/></svg></div><span class="t-name">Other</span><svg class="i chev"><use href="#right"/></svg></div>
+    </div>
+    <div class="nav">
+      <a><svg class="i lg"><use href="#home"/></svg><span>Home</span></a>
+      <a><svg class="i lg"><use href="#list"/></svg><span>Transactions</span></a>
+      <a><svg class="i lg"><use href="#chart"/></svg><span>Reports</span></a>
+      <a><svg class="i lg"><use href="#gear"/></svg><span>Settings</span></a>
+    </div>
+  </div>
+  <div class="cap">11 &middot; Categories</div>
+</div>
+
+<div class="cell">
+  <div class="phone">
+    <div class="status" style="background:var(--primary-dark);color:#fff"><span>9:41</span><span class="r"><svg class="i"><use href="#signal"/></svg><svg class="i"><use href="#wifi"/></svg><svg class="i"><use href="#batt"/></svg></span></div>
+    <div class="bar"><svg class="i lg"><use href="#back"/></svg><h2>M-Pesa import</h2><svg class="i lg"><use href="#info"/></svg></div>
+    <div class="body" style="padding-top:14px">
+      <div class="card between">
+        <div><div class="lbl">Found messages</div><div style="font-size:23px;font-weight:600;letter-spacing:-.025em;margin-top:1px">245</div></div>
+        <div class="ic" style="width:31px;height:31px;background:#E8F5E9;color:var(--income)"><svg class="i lg"><use href="#msg"/></svg></div>
+      </div>
+      <div class="card">
+        <div class="between"><span class="lbl">Import progress</span><span class="lbl" style="color:var(--primary);font-weight:500">88%</span></div>
+        <div class="track" style="height:6px"><i style="width:88%;background:var(--primary)"></i></div>
+        <div class="row" style="margin-top:8px;gap:6px;color:var(--income)"><svg class="i sm"><use href="#check"/></svg><span style="font-size:9px;color:var(--text)">215 imported</span></div>
+      </div>
+      <div class="row" style="gap:9px">
+        <div class="tile"><div class="row" style="gap:6px;color:var(--text-2)"><svg class="i sm"><use href="#swap"/></svg><span class="lbl">Duplicate skipped</span></div><div style="font-size:15px;font-weight:600;margin-top:3px">30</div></div>
+        <div class="tile"><div class="row" style="gap:6px;color:var(--text-2)"><svg class="i sm"><use href="#info"/></svg><span class="lbl">Failed to parse</span></div><div style="font-size:15px;font-weight:600;margin-top:3px">0</div></div>
+      </div>
+      <div class="btn" style="margin-top:auto">Done</div>
+    </div>
+  </div>
+  <div class="cap">12 &middot; M-Pesa import</div>
+</div>
+
+<div class="cell">
+  <div class="phone">
+    <div class="status" style="background:var(--primary-dark);color:#fff"><span>9:41</span><span class="r"><svg class="i"><use href="#signal"/></svg><svg class="i"><use href="#wifi"/></svg><svg class="i"><use href="#batt"/></svg></span></div>
+    <div class="bar"><svg class="i lg"><use href="#back"/></svg><h2>Settings</h2></div>
+    <div class="body" style="padding-top:8px;gap:0;background:var(--surface)">
+      <div class="row" style="padding:9px 0">
+        <div class="ic rd" style="width:35px;height:35px;background:#E8F5E9;color:var(--income)"><svg class="i lg"><use href="#user"/></svg></div>
+        <div><div class="t-name">Owen Wanjohi</div><div class="t-meta">owen.wanjohi@gmail.com</div></div>
+        <svg class="i chev"><use href="#right"/></svg>
+      </div>
+      <div class="hr"></div>
+      <div class="row" style="padding:9.5px 0"><svg class="i" style="color:var(--text-2)"><use href="#user"/></svg><span class="t-name">Profile</span><svg class="i chev"><use href="#right"/></svg></div>
+      <div class="hr"></div>
+      <div class="row" style="padding:9.5px 0"><svg class="i" style="color:var(--text-2)"><use href="#card"/></svg><span class="t-name">Currency</span><span style="margin-left:auto;font-size:8.5px;color:var(--text-2)">Kenyan Shilling (KSh)</span><svg class="i chev" style="margin-left:5px"><use href="#right"/></svg></div>
+      <div class="hr"></div>
+      <div class="row" style="padding:9.5px 0"><svg class="i" style="color:var(--text-2)"><use href="#bell"/></svg><span class="t-name">Notifications</span><svg class="i chev"><use href="#right"/></svg></div>
+      <div class="hr"></div>
+      <div class="row" style="padding:9.5px 0"><svg class="i" style="color:var(--text-2)"><use href="#moon"/></svg><span class="t-name">Dark mode</span><div class="sw"><i></i></div></div>
+      <div class="hr"></div>
+      <div class="row" style="padding:9.5px 0"><svg class="i" style="color:var(--text-2)"><use href="#cloud"/></svg><span class="t-name">Backup and restore</span><svg class="i chev"><use href="#right"/></svg></div>
+      <div class="hr"></div>
+      <div class="row" style="padding:9.5px 0"><svg class="i" style="color:var(--text-2)"><use href="#swap"/></svg><span class="t-name">Import / export data</span><svg class="i chev"><use href="#right"/></svg></div>
+      <div class="hr"></div>
+      <div class="row" style="padding:9.5px 0"><svg class="i" style="color:var(--text-2)"><use href="#lock"/></svg><span class="t-name">Security</span><svg class="i chev"><use href="#right"/></svg></div>
+      <div class="hr"></div>
+      <div class="row" style="padding:9.5px 0"><svg class="i" style="color:var(--text-2)"><use href="#info"/></svg><div><div class="t-name">About PesaTrack</div><div class="t-meta">Version 1.0.0</div></div><svg class="i chev"><use href="#right"/></svg></div>
+    </div>
+    <div class="nav">
+      <a><svg class="i lg"><use href="#home"/></svg><span>Home</span></a>
+      <a><svg class="i lg"><use href="#list"/></svg><span>Transactions</span></a>
+      <a><svg class="i lg"><use href="#chart"/></svg><span>Reports</span></a>
+      <a class="on"><svg class="i lg"><use href="#gear"/></svg><span>Settings</span></a>
+    </div>
+  </div>
+  <div class="cap">13 &middot; Settings</div>
+</div>
+
+</div>
+
+<div class="ds">
+  <div style="min-width:200px">
+    <div class="row" style="gap:11px">
+      <svg viewBox="0 0 64 56" style="width:44px;height:39px" aria-hidden="true">
+        <rect x="0" y="0" width="64" height="56" rx="15" fill="#00A859"/>
+        <path d="M18 44V13h9.5a8.5 8.5 0 0 1 0 17H18" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="34" y="34" width="5" height="10" rx="2.5" fill="#fff" opacity=".55"/>
+        <rect x="42" y="27" width="5" height="17" rx="2.5" fill="#fff" opacity=".78"/>
+        <rect x="50" y="19" width="5" height="25" rx="2.5" fill="#FFC107"/>
+      </svg>
+      <div>
+        <div style="font-size:17px;font-weight:600;letter-spacing:-.015em">PesaTrack</div>
+        <div style="font-size:10px;color:var(--text-2)">Track every shilling.</div>
+      </div>
+    </div>
+    <h4 style="margin-top:22px">Typography</h4>
+    <div style="font-size:12px;font-weight:500">Poppins</div>
+    <div class="rule" style="margin-top:6px">
+      <div>28 / 22 / 18 &nbsp;<span>SemiBold 600 — headings</span></div>
+      <div>14 / 13 &nbsp;<span>Medium 500 — labels, buttons</span></div>
+      <div>14 / 12 &nbsp;<span>Regular 400 — body</span></div>
+      <div>11 &nbsp;<span>Regular 400 — metadata</span></div>
+    </div>
+  </div>
+
+  <div style="flex:1;min-width:380px">
+    <h4>Colour</h4>
+    <div class="sw-grid">
+      <div class="sw-item"><div class="chip" style="background:#00A859"></div><div><b>Primary</b><span>#00A859</span></div></div>
+      <div class="sw-item"><div class="chip" style="background:#00703C"></div><div><b>Primary dark</b><span>#00703C</span></div></div>
+      <div class="sw-item"><div class="chip" style="background:#1EB980"></div><div><b>Secondary</b><span>#1EB980</span></div></div>
+      <div class="sw-item"><div class="chip" style="background:#FFC107"></div><div><b>Accent</b><span>#FFC107</span></div></div>
+      <div class="sw-item"><div class="chip" style="background:#E53935"></div><div><b>Expense</b><span>#E53935</span></div></div>
+      <div class="sw-item"><div class="chip" style="background:#43A047"></div><div><b>Income</b><span>#43A047</span></div></div>
+      <div class="sw-item"><div class="chip" style="background:#F7F8FA"></div><div><b>Background</b><span>#F7F8FA</span></div></div>
+      <div class="sw-item"><div class="chip" style="background:#FFFFFF"></div><div><b>Surface</b><span>#FFFFFF</span></div></div>
+      <div class="sw-item"><div class="chip" style="background:#E9EBEF"></div><div><b>Divider</b><span>#E9EBEF</span></div></div>
+      <div class="sw-item"><div class="chip" style="background:#111827"></div><div><b>Text primary</b><span>#111827</span></div></div>
+      <div class="sw-item"><div class="chip" style="background:#6B7280"></div><div><b>Text secondary</b><span>#6B7280</span></div></div>
+    </div>
+    <h4 style="margin-top:22px">Category tints</h4>
+    <div class="catmap">
+      <div><span class="ic rd" style="width:22px;height:22px;background:#FFF8E1;color:#A67C00"><svg class="i sm"><use href="#food"/></svg></span>Food</div>
+      <div><span class="ic rd" style="width:22px;height:22px;background:#E8F5E9;color:#43A047"><svg class="i sm"><use href="#fuel"/></svg></span>Fuel</div>
+      <div><span class="ic rd" style="width:22px;height:22px;background:#FCE4EC;color:#C2185B"><svg class="i sm"><use href="#bag"/></svg></span>Shopping</div>
+      <div><span class="ic rd" style="width:22px;height:22px;background:#E3F2FD;color:#1565C0"><svg class="i sm"><use href="#bolt"/></svg></span>Utilities</div>
+      <div><span class="ic rd" style="width:22px;height:22px;background:#EDE7F6;color:#5E35B1"><svg class="i sm"><use href="#film"/></svg></span>Entertainment</div>
+      <div><span class="ic rd" style="width:22px;height:22px;background:#E0F2F1;color:#00796B"><svg class="i sm"><use href="#bus"/></svg></span>Transport</div>
+      <div><span class="ic rd" style="width:22px;height:22px;background:#FDECEA;color:#E53935"><svg class="i sm"><use href="#pulse"/></svg></span>Medical</div>
+      <div><span class="ic rd" style="width:22px;height:22px;background:#E8EAF6;color:#3949AB"><svg class="i sm"><use href="#cap"/></svg></span>Education</div>
+      <div><span class="ic rd" style="width:22px;height:22px;background:#F1F2F4;color:#5F6570"><svg class="i sm"><use href="#file"/></svg></span>Other</div>
+    </div>
+  </div>
+
+  <div style="min-width:250px">
+    <h4>Iconography</h4>
+    <div class="rule">
+      <div>Material Symbols Outlined&nbsp;<span>— weight 400, grade 0</span></div>
+      <div>24dp nav &middot; 20dp inline &middot; 18dp trailing</div>
+      <div>1.9px optical stroke, round caps</div>
+      <div><span>No filled variants. No emoji anywhere.</span></div>
+    </div>
+    <h4 style="margin-top:22px">Shape and elevation</h4>
+    <div class="rule">
+      <div>Cards <span>16dp radius</span></div>
+      <div>Sheets, illustration panels <span>20dp</span></div>
+      <div>Fields, buttons, chips <span>10–11dp</span></div>
+      <div>Category avatars <span>9dp square / full circle</span></div>
+      <div>Elevation <span>0dp — separation by 1dp divider</span></div>
+      <div>FAB <span>56dp, 6dp shadow, notched centre</span></div>
+    </div>
+    <h4 style="margin-top:22px">Budget health</h4>
+    <div class="rule">
+      <div><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#00A859;margin-right:7px"></span>Under 60% <span>— primary</span></div>
+      <div><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#FFC107;margin-right:7px"></span>60–89% <span>— accent</span></div>
+      <div><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#E53935;margin-right:7px"></span>90% and over <span>— expense</span></div>
+    </div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>
