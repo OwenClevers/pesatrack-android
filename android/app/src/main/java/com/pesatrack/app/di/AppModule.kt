@@ -4,9 +4,12 @@ import android.content.Context
 import androidx.room.Room
 import com.pesatrack.app.data.database.AppDatabase
 import com.pesatrack.app.data.database.MIGRATION_1_2
+import com.pesatrack.app.data.database.MIGRATION_2_3
 import com.pesatrack.app.data.database.categorySeedCallback
+import com.pesatrack.app.data.repository.BudgetRepositoryImpl
 import com.pesatrack.app.data.repository.CategoryRepositoryImpl
 import com.pesatrack.app.data.repository.TransactionRepositoryImpl
+import com.pesatrack.app.domain.repository.BudgetRepository
 import com.pesatrack.app.domain.repository.CategoryRepository
 import com.pesatrack.app.domain.repository.TransactionRepository
 
@@ -23,6 +26,9 @@ object AppModule {
     @Volatile
     private var categoryRepository: CategoryRepository? = null
 
+    @Volatile
+    private var budgetRepository: BudgetRepository? = null
+
     fun provideDatabase(context: Context): AppDatabase =
         database ?: synchronized(this) {
             database ?: Room.databaseBuilder(
@@ -30,7 +36,7 @@ object AppModule {
                 AppDatabase::class.java,
                 DATABASE_NAME
             )
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                 .addCallback(categorySeedCallback)
                 .build()
                 .also { database = it }
@@ -48,5 +54,12 @@ object AppModule {
             categoryRepository ?: CategoryRepositoryImpl(
                 provideDatabase(context).categoryDao()
             ).also { categoryRepository = it }
+        }
+
+    fun provideBudgetRepository(context: Context): BudgetRepository =
+        budgetRepository ?: synchronized(this) {
+            budgetRepository ?: BudgetRepositoryImpl(
+                provideDatabase(context).budgetDao()
+            ).also { budgetRepository = it }
         }
 }
