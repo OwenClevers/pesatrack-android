@@ -7,6 +7,7 @@ import com.pesatrack.app.domain.model.Category
 import com.pesatrack.app.domain.model.Transaction
 import com.pesatrack.app.domain.model.TransactionSource
 import com.pesatrack.app.domain.model.TransactionType
+import com.pesatrack.app.domain.repository.CategoryRepository
 import com.pesatrack.app.domain.repository.TransactionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,11 +18,20 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 class AddTransactionViewModel(
-    private val repository: TransactionRepository
+    private val repository: TransactionRepository,
+    private val categoryRepository: CategoryRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AddTransactionUiState())
     val uiState: StateFlow<AddTransactionUiState> = _uiState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            categoryRepository.getCategories().collect { categories ->
+                _uiState.update { it.copy(categories = categories) }
+            }
+        }
+    }
 
     fun onAmountChange(value: String) {
         _uiState.update { it.copy(amountText = value) }
@@ -73,10 +83,11 @@ class AddTransactionViewModel(
     }
 
     class Factory(
-        private val repository: TransactionRepository
+        private val repository: TransactionRepository,
+        private val categoryRepository: CategoryRepository
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            AddTransactionViewModel(repository) as T
+            AddTransactionViewModel(repository, categoryRepository) as T
     }
 }

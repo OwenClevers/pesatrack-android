@@ -8,6 +8,7 @@ data class AddTransactionUiState(
     val amountText: String = "",
     val type: TransactionType = TransactionType.EXPENSE,
     val category: Category? = null,
+    val categories: List<Category> = emptyList(),
     val merchant: String = "",
     val description: String = "",
     val date: LocalDate = LocalDate.now(),

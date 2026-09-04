@@ -3,7 +3,11 @@ package com.pesatrack.app.di
 import android.content.Context
 import androidx.room.Room
 import com.pesatrack.app.data.database.AppDatabase
+import com.pesatrack.app.data.database.MIGRATION_1_2
+import com.pesatrack.app.data.database.categorySeedCallback
+import com.pesatrack.app.data.repository.CategoryRepositoryImpl
 import com.pesatrack.app.data.repository.TransactionRepositoryImpl
+import com.pesatrack.app.domain.repository.CategoryRepository
 import com.pesatrack.app.domain.repository.TransactionRepository
 
 object AppModule {
@@ -16,13 +20,20 @@ object AppModule {
     @Volatile
     private var repository: TransactionRepository? = null
 
+    @Volatile
+    private var categoryRepository: CategoryRepository? = null
+
     fun provideDatabase(context: Context): AppDatabase =
         database ?: synchronized(this) {
             database ?: Room.databaseBuilder(
                 context.applicationContext,
                 AppDatabase::class.java,
                 DATABASE_NAME
-            ).build().also { database = it }
+            )
+                .addMigrations(MIGRATION_1_2)
+                .addCallback(categorySeedCallback)
+                .build()
+                .also { database = it }
         }
 
     fun provideTransactionRepository(context: Context): TransactionRepository =
@@ -30,5 +41,12 @@ object AppModule {
             repository ?: TransactionRepositoryImpl(
                 provideDatabase(context).transactionDao()
             ).also { repository = it }
+        }
+
+    fun provideCategoryRepository(context: Context): CategoryRepository =
+        categoryRepository ?: synchronized(this) {
+            categoryRepository ?: CategoryRepositoryImpl(
+                provideDatabase(context).categoryDao()
+            ).also { categoryRepository = it }
         }
 }

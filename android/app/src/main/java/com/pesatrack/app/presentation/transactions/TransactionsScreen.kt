@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.pesatrack.app.di.AppModule
+import com.pesatrack.app.domain.model.Category
 import com.pesatrack.app.ui.theme.Background
 import com.pesatrack.app.ui.theme.Divider
 import com.pesatrack.app.ui.theme.PrimaryDark
@@ -47,8 +48,9 @@ import com.pesatrack.app.ui.theme.components.TransactionRow
 fun TransactionsScreen(navController: NavController) {
     val context = LocalContext.current
     val repository = remember { AppModule.provideTransactionRepository(context) }
+    val categoryRepository = remember { AppModule.provideCategoryRepository(context) }
     val viewModel: TransactionsViewModel = viewModel(
-        factory = TransactionsViewModel.Factory(repository)
+        factory = TransactionsViewModel.Factory(repository, categoryRepository)
     )
     val uiState by viewModel.uiState.collectAsState()
 
@@ -153,7 +155,11 @@ fun TransactionsScreen(navController: NavController) {
                                     if (index > 0) {
                                         HorizontalDivider(color = Divider)
                                     }
-                                    TransactionRow(transaction = transaction)
+                                    TransactionRow(
+                                        transaction = transaction,
+                                        category = uiState.categoriesById[transaction.categoryId]
+                                            ?: Category.unknown(transaction.categoryId)
+                                    )
                                 }
                             }
                         }

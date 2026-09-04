@@ -3,30 +3,35 @@ package com.pesatrack.app.presentation.dashboard
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.pesatrack.app.domain.model.Category
 import com.pesatrack.app.domain.model.Transaction
 import com.pesatrack.app.domain.model.TransactionType
+import com.pesatrack.app.domain.repository.CategoryRepository
 import com.pesatrack.app.domain.repository.TransactionRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import java.time.LocalDate
 import java.time.YearMonth
 
 class DashboardViewModel(
-    repository: TransactionRepository
+    transactionRepository: TransactionRepository,
+    categoryRepository: CategoryRepository
 ) : ViewModel() {
 
     val uiState: StateFlow<DashboardUiState> =
-        repository.getTransactions()
-            .map { transactions -> transactions.toDashboardState() }
+        combine(
+            transactionRepository.getTransactions(),
+            categoryRepository.getCategories()
+        ) { transactions, categories -> transactions.toDashboardState(categories) }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5_000),
                 initialValue = DashboardUiState()
             )
 
-    private fun List<Transaction>.toDashboardState(): DashboardUiState {
+    private fun List<Transaction>.toDashboardState(categories: List<Category>): DashboardUiState {
         val today = LocalDate.now()
         val thisMonth = YearMonth.from(today)
 
@@ -45,15 +50,17 @@ class DashboardViewModel(
             monthIncome = monthIncome,
             remainingBudget = null,
             recentTransactions = sortedByDescending { it.transactionDate }.take(5),
+            categoriesById = categories.associateBy { it.id },
             isLoading = false
         )
     }
 
     class Factory(
-        private val repository: TransactionRepository
+        private val transactionRepository: TransactionRepository,
+        private val categoryRepository: CategoryRepository
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            DashboardViewModel(repository) as T
+            DashboardViewModel(transactionRepository, categoryRepository) as T
     }
 }
