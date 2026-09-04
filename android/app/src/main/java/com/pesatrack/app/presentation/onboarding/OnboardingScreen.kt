@@ -68,7 +68,7 @@ private val onboardingPages = listOf(
     OnboardingPage(
         illustration = R.drawable.ic_onboarding_budgets,
         title = "Set budgets",
-        body = "Create budgets for categories and get alerts when you are nearing your limits."
+        body = "Create budgets for your categories and see at a glance how close you are to each limit."
     )
 )
 
