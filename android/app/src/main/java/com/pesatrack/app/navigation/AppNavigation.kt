@@ -7,8 +7,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.pesatrack.app.presentation.budgets.BudgetsScreen
+import com.pesatrack.app.presentation.categories.CategoriesScreen
 import com.pesatrack.app.presentation.dashboard.DashboardScreen
 import com.pesatrack.app.presentation.reports.ReportsScreen
+import com.pesatrack.app.presentation.settings.SettingsScreen
 import com.pesatrack.app.presentation.splash.SplashScreen
 import com.pesatrack.app.presentation.transactions.AddTransactionScreen
 import com.pesatrack.app.presentation.transactions.TransactionDetailsScreen
@@ -54,6 +56,14 @@ fun AppNavigation() {
 
         composable(Screen.Reports.route) {
             ReportsScreen(navController)
+        }
+
+        composable(Screen.Settings.route) {
+            SettingsScreen(navController)
+        }
+
+        composable(Screen.Categories.route) {
+            CategoriesScreen(navController)
         }
     }
 }
