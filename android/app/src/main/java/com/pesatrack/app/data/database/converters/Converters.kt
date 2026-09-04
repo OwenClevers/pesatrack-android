@@ -5,6 +5,7 @@ import androidx.room.TypeConverter
 import com.pesatrack.app.domain.model.TransactionSource
 import com.pesatrack.app.domain.model.TransactionType
 import java.time.LocalDateTime
+import java.time.YearMonth
 
 private const val TAG = "Converters"
 
@@ -43,4 +44,12 @@ class Converters {
     @TypeConverter
     fun toTransactionSource(value: String): TransactionSource =
         TransactionSource.valueOf(value)
+
+    @TypeConverter
+    fun fromYearMonth(value: YearMonth): String =
+        value.toString()
+
+    @TypeConverter
+    fun toYearMonth(value: String): YearMonth =
+        YearMonth.parse(value)
 }

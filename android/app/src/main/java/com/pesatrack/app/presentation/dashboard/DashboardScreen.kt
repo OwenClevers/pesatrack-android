@@ -51,8 +51,9 @@ fun DashboardScreen(navController: NavController) {
     val context = LocalContext.current
     val repository = remember { AppModule.provideTransactionRepository(context) }
     val categoryRepository = remember { AppModule.provideCategoryRepository(context) }
+    val budgetRepository = remember { AppModule.provideBudgetRepository(context) }
     val viewModel: DashboardViewModel = viewModel(
-        factory = DashboardViewModel.Factory(repository, categoryRepository)
+        factory = DashboardViewModel.Factory(repository, categoryRepository, budgetRepository)
     )
     val uiState by viewModel.uiState.collectAsState()
 
@@ -110,7 +111,8 @@ fun DashboardScreen(navController: NavController) {
                 MoneyCard(
                     todaySpending = uiState.todaySpending,
                     monthIncome = uiState.monthIncome,
-                    remainingBudget = uiState.remainingBudget
+                    remainingBudget = uiState.remainingBudget,
+                    onRemainingBudgetClick = { navController.navigate(Screen.Budgets.route) }
                 )
 
                 Text(

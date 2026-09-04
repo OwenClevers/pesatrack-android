@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.pesatrack.app.presentation.budgets.BudgetsScreen
 import com.pesatrack.app.presentation.dashboard.DashboardScreen
 import com.pesatrack.app.presentation.splash.SplashScreen
 import com.pesatrack.app.presentation.transactions.AddTransactionScreen
@@ -44,6 +45,10 @@ fun AppNavigation() {
         ) { backStackEntry ->
             val transactionId = backStackEntry.arguments?.getLong("transactionId") ?: return@composable
             TransactionDetailsScreen(navController, transactionId)
+        }
+
+        composable(Screen.Budgets.route) {
+            BudgetsScreen(navController)
         }
     }
 }

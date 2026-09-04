@@ -1,6 +1,7 @@
 package com.pesatrack.app.ui.theme.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -44,6 +45,7 @@ fun MoneyCard(
     todaySpending: Double,
     monthIncome: Double,
     remainingBudget: Double?,
+    onRemainingBudgetClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -76,7 +78,8 @@ fun MoneyCard(
             amountColor = Primary,
             icon = Icons.Outlined.AccountBalanceWallet,
             iconContainer = AccentContainer,
-            iconContent = AccentContent
+            iconContent = AccentContent,
+            onClick = onRemainingBudgetClick
         )
     }
 }
@@ -88,11 +91,13 @@ private fun MoneyRow(
     amountColor: Color,
     icon: ImageVector,
     iconContainer: Color,
-    iconContent: Color
+    iconContent: Color,
+    onClick: (() -> Unit)? = null
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
