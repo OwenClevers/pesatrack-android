@@ -195,13 +195,16 @@ private fun DonutChart(
     total: Double,
     modifier: Modifier = Modifier
 ) {
+    val dividerColor = Divider
+    val holeColor = Surface
+
     Box(
         modifier = modifier.size(86.dp),
         contentAlignment = Alignment.Center
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             if (slices.isEmpty() || total <= 0.0) {
-                drawCircle(color = Divider)
+                drawCircle(color = dividerColor)
             } else {
                 var startAngle = -90f
                 slices.forEach { slice ->
@@ -216,7 +219,7 @@ private fun DonutChart(
                 }
             }
             drawCircle(
-                color = Color.White,
+                color = holeColor,
                 radius = size.minDimension / 2f * (56f / 86f)
             )
         }
@@ -291,8 +294,10 @@ private fun DailyTrendChart(
     maxValue: Double,
     modifier: Modifier = Modifier
 ) {
+    val gridColor = Divider
+    val dotHoleColor = Surface
+
     Canvas(modifier = modifier) {
-        val gridColor = Divider
         listOf(0f, 0.5f, 1f).forEach { fraction ->
             val y = size.height * fraction
             drawLine(
@@ -321,7 +326,7 @@ private fun DailyTrendChart(
             val lastX = stepX * lastIndex
             val lastY = size.height * (1 - (points[lastIndex].amount / maxValue).toFloat().coerceIn(0f, 1f))
             drawCircle(color = Primary, radius = 4.dp.toPx(), center = Offset(lastX, lastY))
-            drawCircle(color = Color.White, radius = 2.dp.toPx(), center = Offset(lastX, lastY))
+            drawCircle(color = dotHoleColor, radius = 2.dp.toPx(), center = Offset(lastX, lastY))
         }
     }
 }

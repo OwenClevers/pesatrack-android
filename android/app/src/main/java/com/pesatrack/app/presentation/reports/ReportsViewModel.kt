@@ -11,7 +11,6 @@ import com.pesatrack.app.domain.repository.CategoryRepository
 import com.pesatrack.app.domain.repository.TransactionRepository
 import com.pesatrack.app.ui.theme.Accent
 import com.pesatrack.app.ui.theme.Primary
-import com.pesatrack.app.ui.theme.PrimaryDark
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -24,7 +23,10 @@ import kotlin.math.floor
 import kotlin.math.log10
 import kotlin.math.roundToInt
 
-private val RankColors = listOf(PrimaryDark, Primary, Accent, Color(0xFF1565C0))
+// Fixed chart-slice colors regardless of theme -- ViewModels don't read Compose
+// theme state, and this is decorative chart contrast, not a themed UI token.
+// 0xFF00703C matches the brand's PrimaryDark green.
+private val RankColors = listOf(Color(0xFF00703C), Primary, Accent, Color(0xFF1565C0))
 private val OtherColor = Color(0xFFB6BCC6)
 
 @OptIn(ExperimentalCoroutinesApi::class)
