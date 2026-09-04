@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ReceiptLong
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.Card
@@ -34,6 +35,7 @@ import com.pesatrack.app.ui.theme.Background
 import com.pesatrack.app.ui.theme.Divider
 import com.pesatrack.app.ui.theme.PrimaryDark
 import com.pesatrack.app.ui.theme.Surface
+import com.pesatrack.app.ui.theme.components.EmptyState
 import com.pesatrack.app.ui.theme.components.MoneyCard
 import com.pesatrack.app.ui.theme.components.PesaBottomBar
 import com.pesatrack.app.ui.theme.components.TransactionRow
@@ -119,11 +121,18 @@ fun DashboardScreen(navController: NavController) {
                     elevation = CardDefaults.cardElevation(0.dp)
                 ) {
                     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                        uiState.recentTransactions.forEachIndexed { index, transaction ->
-                            if (index > 0) {
-                                HorizontalDivider(color = Divider)
+                        if (uiState.recentTransactions.isEmpty()) {
+                            EmptyState(
+                                icon = Icons.AutoMirrored.Outlined.ReceiptLong,
+                                text = "No transactions yet"
+                            )
+                        } else {
+                            uiState.recentTransactions.forEachIndexed { index, transaction ->
+                                if (index > 0) {
+                                    HorizontalDivider(color = Divider)
+                                }
+                                TransactionRow(transaction = transaction)
                             }
-                            TransactionRow(transaction = transaction)
                         }
                     }
                 }
