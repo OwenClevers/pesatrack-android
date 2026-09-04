@@ -21,7 +21,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -63,14 +62,12 @@ import com.pesatrack.app.ui.theme.Surface
 import com.pesatrack.app.ui.theme.TextPrimary
 import com.pesatrack.app.ui.theme.TextSecondary
 import com.pesatrack.app.ui.theme.components.EmptyState
+import com.pesatrack.app.ui.theme.components.MonthSelector
 import com.pesatrack.app.ui.theme.components.PesaBottomBar
 import com.pesatrack.app.ui.theme.components.visual
-import java.time.YearMonth
-import java.time.format.DateTimeFormatter
 
 private val TrackBackground = Color(0xFFEDEFF3)
 private val AccentText = Color(0xFFA67C00)
-private val monthFormat = DateTimeFormatter.ofPattern("MMMM yyyy")
 
 // id == 0 means "creating a new budget"; a real id means editing that row in place.
 private data class BudgetSheetTarget(
@@ -120,7 +117,11 @@ fun BudgetsScreen(navController: NavController) {
                 )
                 MonthSelector(
                     month = uiState.month,
-                    onMonthSelected = viewModel::onMonthSelected
+                    onMonthSelected = viewModel::onMonthSelected,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(PrimaryDark)
+                        .padding(horizontal = 20.dp, vertical = 4.dp)
                 )
             }
         }
@@ -302,56 +303,6 @@ private fun BudgetCategoryField(
     }
 }
 
-@Composable
-private fun MonthSelector(
-    month: YearMonth,
-    onMonthSelected: (YearMonth) -> Unit
-) {
-    var expanded by remember { mutableStateOf(false) }
-    val months = remember { (0..11).map { YearMonth.now().minusMonths(it.toLong()) } }
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(PrimaryDark)
-            .padding(horizontal = 20.dp, vertical = 4.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .clickable { expanded = true }
-                .padding(vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(
-                text = month.format(monthFormat),
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.White.copy(alpha = 0.88f)
-            )
-            Icon(
-                imageVector = Icons.Outlined.KeyboardArrowDown,
-                contentDescription = null,
-                tint = Color.White.copy(alpha = 0.88f),
-                modifier = Modifier.size(16.dp)
-            )
-        }
-
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            months.forEach { option ->
-                DropdownMenuItem(
-                    text = { Text(option.format(monthFormat)) },
-                    onClick = {
-                        onMonthSelected(option)
-                        expanded = false
-                    }
-                )
-            }
-        }
-    }
-}
 
 @Composable
 private fun BudgetCard(row: BudgetRow, onClick: () -> Unit) {

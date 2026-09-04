@@ -17,7 +17,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.ShowChart
-import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.PieChart
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -55,8 +54,9 @@ import com.pesatrack.app.ui.theme.Surface
 import com.pesatrack.app.ui.theme.TextPrimary
 import com.pesatrack.app.ui.theme.TextSecondary
 import com.pesatrack.app.ui.theme.components.EmptyState
+import com.pesatrack.app.ui.theme.components.MonthSelector
 import com.pesatrack.app.ui.theme.components.PesaBottomBar
-import java.time.LocalDate
+import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
 private val monthFormat = DateTimeFormatter.ofPattern("MMM yyyy")
@@ -90,26 +90,15 @@ fun ReportsScreen(navController: NavController) {
                         actionIconContentColor = Color.White
                     )
                 )
-                Row(
+                MonthSelector(
+                    month = uiState.month,
+                    onMonthSelected = viewModel::onMonthSelected,
+                    formatter = monthFormat,
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(PrimaryDark)
-                        .padding(horizontal = 20.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Text(
-                        text = "This month",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.White.copy(alpha = 0.88f)
-                    )
-                    Icon(
-                        imageVector = Icons.Outlined.KeyboardArrowDown,
-                        contentDescription = null,
-                        tint = Color.White.copy(alpha = 0.88f),
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
+                        .padding(horizontal = 20.dp, vertical = 8.dp)
+                )
             }
         }
     ) { paddingValues ->
@@ -171,7 +160,7 @@ fun ReportsScreen(navController: NavController) {
                             color = TextPrimary
                         )
                         Text(
-                            text = LocalDate.now().format(monthFormat),
+                            text = uiState.month.format(monthFormat),
                             style = MaterialTheme.typography.labelSmall,
                             color = TextSecondary
                         )
@@ -192,7 +181,7 @@ fun ReportsScreen(navController: NavController) {
                                     .height(90.dp)
                             )
                         }
-                        DayLabels(dayCount = uiState.dailyTrend.size)
+                        DayLabels(dayCount = uiState.dailyTrend.size, month = uiState.month)
                     }
                 }
             }
@@ -338,10 +327,11 @@ private fun DailyTrendChart(
 }
 
 @Composable
-private fun DayLabels(dayCount: Int) {
+private fun DayLabels(dayCount: Int, month: YearMonth) {
     if (dayCount == 0) return
 
     val labelDays = (0..4).map { index -> 1 + (index * (dayCount - 1) / 4) }
+    val monthAbbreviation = month.format(DateTimeFormatter.ofPattern("MMM"))
 
     Row(
         modifier = Modifier
@@ -351,7 +341,7 @@ private fun DayLabels(dayCount: Int) {
     ) {
         labelDays.forEach { day ->
             Text(
-                text = "${day} ${LocalDate.now().format(DateTimeFormatter.ofPattern("MMM"))}",
+                text = "${day} ${monthAbbreviation}",
                 style = MaterialTheme.typography.labelSmall,
                 color = TextSecondary
             )

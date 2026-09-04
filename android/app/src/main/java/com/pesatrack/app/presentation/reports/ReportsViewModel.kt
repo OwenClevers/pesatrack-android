@@ -12,9 +12,12 @@ import com.pesatrack.app.domain.repository.TransactionRepository
 import com.pesatrack.app.ui.theme.Accent
 import com.pesatrack.app.ui.theme.Primary
 import com.pesatrack.app.ui.theme.PrimaryDark
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import java.time.YearMonth
 import kotlin.math.floor
@@ -24,28 +27,41 @@ import kotlin.math.roundToInt
 private val RankColors = listOf(PrimaryDark, Primary, Accent, Color(0xFF1565C0))
 private val OtherColor = Color(0xFFB6BCC6)
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class ReportsViewModel(
     transactionRepository: TransactionRepository,
     categoryRepository: CategoryRepository
 ) : ViewModel() {
 
+    private val selectedMonth = MutableStateFlow(YearMonth.now())
+
     val uiState: StateFlow<ReportsUiState> =
-        combine(
-            transactionRepository.getTransactions(),
-            categoryRepository.getCategories()
-        ) { transactions, categories -> buildState(transactions, categories) }
+        selectedMonth
+            .flatMapLatest { month ->
+                combine(
+                    transactionRepository.getTransactions(),
+                    categoryRepository.getCategories()
+                ) { transactions, categories -> buildState(month, transactions, categories) }
+            }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5_000),
                 initialValue = ReportsUiState()
             )
 
-    private fun buildState(transactions: List<Transaction>, categories: List<Category>): ReportsUiState {
-        val thisMonth = YearMonth.now()
+    fun onMonthSelected(month: YearMonth) {
+        selectedMonth.value = month
+    }
+
+    private fun buildState(
+        month: YearMonth,
+        transactions: List<Transaction>,
+        categories: List<Category>
+    ): ReportsUiState {
         val categoriesById = categories.associateBy { it.id }
 
         val monthExpenses = transactions.filter {
-            it.type == TransactionType.EXPENSE && YearMonth.from(it.transactionDate) == thisMonth
+            it.type == TransactionType.EXPENSE && YearMonth.from(it.transactionDate) == month
         }
 
         val totalExpense = monthExpenses.sumOf { it.amount }
@@ -70,7 +86,7 @@ class ReportsViewModel(
             topSlices
         }
 
-        val daysInMonth = thisMonth.lengthOfMonth()
+        val daysInMonth = month.lengthOfMonth()
         val dailyTrend = (1..daysInMonth).map { day ->
             val amount = monthExpenses
                 .filter { it.transactionDate.dayOfMonth == day }
@@ -80,6 +96,7 @@ class ReportsViewModel(
         val trendMax = niceMax(dailyTrend.maxOfOrNull { it.amount } ?: 0.0)
 
         return ReportsUiState(
+            month = month,
             totalExpense = totalExpense,
             categorySlices = categorySlices,
             dailyTrend = dailyTrend,

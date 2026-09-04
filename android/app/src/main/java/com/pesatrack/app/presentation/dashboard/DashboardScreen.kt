@@ -3,18 +3,14 @@ package com.pesatrack.app.presentation.dashboard
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ReceiptLong
-import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -22,7 +18,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -38,12 +33,9 @@ import com.pesatrack.app.ui.theme.PrimaryDark
 import com.pesatrack.app.ui.theme.Surface
 import com.pesatrack.app.ui.theme.components.EmptyState
 import com.pesatrack.app.ui.theme.components.MoneyCard
+import com.pesatrack.app.ui.theme.components.MonthSelector
 import com.pesatrack.app.ui.theme.components.PesaBottomBar
 import com.pesatrack.app.ui.theme.components.TransactionRow
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-
-private val monthFormat = DateTimeFormatter.ofPattern("MMMM yyyy")
 
 @Composable
 fun DashboardScreen(navController: NavController) {
@@ -77,19 +69,11 @@ fun DashboardScreen(navController: NavController) {
                         style = MaterialTheme.typography.titleLarge,
                         color = Color.White
                     )
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = LocalDate.now().format(monthFormat),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color.White.copy(alpha = 0.82f)
-                        )
-                        Icon(
-                            imageVector = Icons.Outlined.KeyboardArrowDown,
-                            contentDescription = null,
-                            tint = Color.White.copy(alpha = 0.82f),
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
+                    MonthSelector(
+                        month = uiState.month,
+                        onMonthSelected = viewModel::onMonthSelected,
+                        contentColor = Color.White.copy(alpha = 0.82f)
+                    )
                 }
             }
 
