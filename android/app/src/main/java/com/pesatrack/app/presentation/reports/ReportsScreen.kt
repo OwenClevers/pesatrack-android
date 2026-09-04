@@ -16,8 +16,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ShowChart
 import androidx.compose.material.icons.outlined.IosShare
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
+import androidx.compose.material.icons.outlined.PieChart
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -53,6 +55,7 @@ import com.pesatrack.app.ui.theme.PrimaryDark
 import com.pesatrack.app.ui.theme.Surface
 import com.pesatrack.app.ui.theme.TextPrimary
 import com.pesatrack.app.ui.theme.TextSecondary
+import com.pesatrack.app.ui.theme.components.EmptyState
 import com.pesatrack.app.ui.theme.components.PesaBottomBar
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -136,19 +139,18 @@ fun ReportsScreen(navController: NavController) {
                         color = TextPrimary,
                         modifier = Modifier.padding(bottom = 10.dp)
                     )
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        DonutChart(
-                            slices = uiState.categorySlices,
-                            total = uiState.totalExpense
+                    if (uiState.totalExpense <= 0.0) {
+                        EmptyState(
+                            icon = Icons.Outlined.PieChart,
+                            text = "No expenses this month"
                         )
-                        Spacer(Modifier.width(14.dp))
-                        if (uiState.categorySlices.isEmpty()) {
-                            Text(
-                                text = "No expenses this month",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = TextSecondary
+                    } else {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            DonutChart(
+                                slices = uiState.categorySlices,
+                                total = uiState.totalExpense
                             )
-                        } else {
+                            Spacer(Modifier.width(14.dp))
                             Column(Modifier.weight(1f)) {
                                 uiState.categorySlices.forEach { slice ->
                                     LegendRow(slice)
@@ -180,17 +182,24 @@ fun ReportsScreen(navController: NavController) {
                             color = TextSecondary
                         )
                     }
-                    Row(modifier = Modifier.padding(top = 8.dp)) {
-                        TrendAxisLabels(uiState.trendMax)
-                        DailyTrendChart(
-                            points = uiState.dailyTrend,
-                            maxValue = uiState.trendMax,
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(90.dp)
+                    if (uiState.totalExpense <= 0.0) {
+                        EmptyState(
+                            icon = Icons.AutoMirrored.Outlined.ShowChart,
+                            text = "No expenses this month"
                         )
+                    } else {
+                        Row(modifier = Modifier.padding(top = 8.dp)) {
+                            TrendAxisLabels(uiState.trendMax)
+                            DailyTrendChart(
+                                points = uiState.dailyTrend,
+                                maxValue = uiState.trendMax,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(90.dp)
+                            )
+                        }
+                        DayLabels(dayCount = uiState.dailyTrend.size)
                     }
-                    DayLabels(dayCount = uiState.dailyTrend.size)
                 }
             }
         }
