@@ -1,0 +1,90 @@
+package com.pesatrack.app.fake
+
+import com.pesatrack.app.domain.model.Budget
+import com.pesatrack.app.domain.model.Category
+import com.pesatrack.app.domain.model.CategoryDeleteResult
+import com.pesatrack.app.domain.model.Transaction
+import com.pesatrack.app.domain.repository.BudgetRepository
+import com.pesatrack.app.domain.repository.CategoryRepository
+import com.pesatrack.app.domain.repository.TransactionRepository
+import java.time.YearMonth
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
+
+/** In-memory [TransactionRepository] fake for ViewModel unit tests. */
+class FakeTransactionRepository(
+    initial: List<Transaction> = emptyList()
+) : TransactionRepository {
+
+    private val transactions = MutableStateFlow(initial)
+
+    override fun getTransactions(): Flow<List<Transaction>> = transactions
+
+    override fun getTransaction(id: Long): Flow<Transaction?> =
+        transactions.map { list -> list.firstOrNull { it.id == id } }
+
+    override suspend fun addTransaction(transaction: Transaction) {
+        transactions.update { it + transaction }
+    }
+
+    override suspend fun updateTransaction(transaction: Transaction) {
+        transactions.update { list -> list.map { if (it.id == transaction.id) transaction else it } }
+    }
+
+    override suspend fun deleteTransaction(id: Long) {
+        transactions.update { list -> list.filterNot { it.id == id } }
+    }
+
+    override suspend fun importMpesaTransaction(transaction: Transaction, smsCode: String): Boolean {
+        if (transactions.value.any { it.smsCode == smsCode }) return false
+        transactions.update { it + transaction }
+        return true
+    }
+}
+
+/** In-memory [CategoryRepository] fake for ViewModel unit tests. */
+class FakeCategoryRepository(
+    initial: List<Category> = emptyList()
+) : CategoryRepository {
+
+    private val categories = MutableStateFlow(initial)
+
+    override fun getCategories(): Flow<List<Category>> = categories
+
+    override suspend fun addCategory(name: String): Category {
+        val category = Category(
+            id = (categories.value.maxOfOrNull { it.id } ?: 0) + 1,
+            name = name,
+            iconKey = "other",
+            colorKey = "other"
+        )
+        categories.update { it + category }
+        return category
+    }
+
+    override suspend fun renameCategory(id: Long, name: String) {
+        categories.update { list -> list.map { if (it.id == id) it.copy(name = name) else it } }
+    }
+
+    override suspend fun deleteCategory(id: Long): CategoryDeleteResult {
+        categories.update { list -> list.filterNot { it.id == id } }
+        return CategoryDeleteResult.Deleted
+    }
+}
+
+/** In-memory [BudgetRepository] fake for ViewModel unit tests. */
+class FakeBudgetRepository(
+    initial: List<Budget> = emptyList()
+) : BudgetRepository {
+
+    private val budgets = MutableStateFlow(initial)
+
+    override fun getBudgets(month: YearMonth): Flow<List<Budget>> =
+        budgets.map { list -> list.filter { it.month == month } }
+
+    override suspend fun upsertBudget(budget: Budget) {
+        budgets.update { list -> list.filterNot { it.id == budget.id } + budget }
+    }
+}
