@@ -18,11 +18,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.pesatrack.app.core.Constants
+import com.pesatrack.app.core.OnboardingPreferences
 import com.pesatrack.app.navigation.Screen
 import com.pesatrack.app.ui.theme.Accent
 import com.pesatrack.app.ui.theme.PrimaryDark
@@ -32,9 +34,16 @@ import kotlinx.coroutines.delay
 fun SplashScreen(
     navController: NavController
 ) {
+    val context = LocalContext.current
+
     LaunchedEffect(Unit) {
         delay(Constants.SPLASH_DELAY)
-        navController.navigate(Screen.Dashboard.route) {
+        val destination = if (OnboardingPreferences.hasSeenOnboarding(context)) {
+            Screen.Dashboard.route
+        } else {
+            Screen.Onboarding.route
+        }
+        navController.navigate(destination) {
             popUpTo(Screen.Splash.route) {
                 inclusive = true
             }

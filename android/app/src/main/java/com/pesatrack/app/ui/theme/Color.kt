@@ -21,6 +21,10 @@ val Divider = Color(0xFFE9EBEF)
 val TextPrimary = Color(0xFF111827)
 val TextSecondary = Color(0xFF6B7280)
 
+// Onboarding
+val OnboardingArtBackground = Color(0xFFEDF7F1)
+val OnboardingDotInactive = Color(0xFFDDE1E7)
+
 // Category tints — container / content pairs
 val FoodContainer = Color(0xFFFFF8E1)
 val FoodContent = Color(0xFFA67C00)

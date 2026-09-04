@@ -1,0 +1,44 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="88dp"
+    android:viewportWidth="120"
+    android:viewportHeight="88">
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M39,6 H67 A9,9 0 0 1 76,15 V73 A9,9 0 0 1 67,82 H39 A9,9 0 0 1 30,73 V15 A9,9 0 0 1 39,6 Z" />
+    <path
+        android:fillColor="#E3F3EA"
+        android:pathData="M40.5,16 H65.5 A4.5,4.5 0 0 1 70,20.5 A4.5,4.5 0 0 1 65.5,25 H40.5 A4.5,4.5 0 0 1 36,20.5 A4.5,4.5 0 0 1 40.5,16 Z" />
+    <path
+        android:fillColor="#E3F3EA"
+        android:pathData="M40.5,30 H57.5 A4.5,4.5 0 0 1 62,34.5 A4.5,4.5 0 0 1 57.5,39 H40.5 A4.5,4.5 0 0 1 36,34.5 A4.5,4.5 0 0 1 40.5,30 Z" />
+    <path
+        android:fillColor="#E3F3EA"
+        android:pathData="M40.5,44 H65.5 A4.5,4.5 0 0 1 70,48.5 A4.5,4.5 0 0 1 65.5,53 H40.5 A4.5,4.5 0 0 1 36,48.5 A4.5,4.5 0 0 1 40.5,44 Z" />
+    <path
+        android:fillColor="#E3F3EA"
+        android:pathData="M40.5,58 H51.5 A4.5,4.5 0 0 1 56,62.5 A4.5,4.5 0 0 1 51.5,67 H40.5 A4.5,4.5 0 0 1 36,62.5 A4.5,4.5 0 0 1 40.5,58 Z" />
+    <path
+        android:fillColor="#00A859"
+        android:pathData="M78,22 h26 a5,5 0 0 1 5,5 v16 a5,5 0 0 1 -5,5 H92 l-7,7 v-7 h-7 a5,5 0 0 1 -5,-5 V27 a5,5 0 0 1 5,-5 z" />
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2.6"
+        android:strokeLineCap="round"
+        android:pathData="M84,35 h14" />
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2.6"
+        android:strokeLineCap="round"
+        android:pathData="M84,41 h9" />
+    <path
+        android:fillColor="#00703C"
+        android:pathData="M23,72 A11,11 0 1 0 45,72 A11,11 0 1 0 23,72 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M31.5,70 H36.5 A2,2 0 0 1 38.5,72 V75 A2,2 0 0 1 36.5,77 H31.5 A2,2 0 0 1 29.5,75 V72 A2,2 0 0 1 31.5,70 Z" />
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.8"
+        android:pathData="M31.5,70 v-2 a2.5,2.5 0 0 1 5,0 v2" />
+</vector>
