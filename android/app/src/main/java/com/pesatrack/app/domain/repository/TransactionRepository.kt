@@ -11,6 +11,8 @@ interface TransactionRepository {
 
     suspend fun addTransaction(transaction: Transaction)
 
+    suspend fun updateTransaction(transaction: Transaction)
+
     suspend fun deleteTransaction(id: Long)
 
     // Returns true if the transaction was newly inserted, false if smsCode

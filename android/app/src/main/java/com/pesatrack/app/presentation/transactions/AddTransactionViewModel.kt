@@ -5,13 +5,13 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.pesatrack.app.domain.model.Category
 import com.pesatrack.app.domain.model.Transaction
-import com.pesatrack.app.domain.model.TransactionSource
 import com.pesatrack.app.domain.model.TransactionType
 import com.pesatrack.app.domain.repository.CategoryRepository
 import com.pesatrack.app.domain.repository.TransactionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -19,19 +19,48 @@ import java.time.LocalTime
 
 class AddTransactionViewModel(
     private val repository: TransactionRepository,
-    private val categoryRepository: CategoryRepository
+    private val categoryRepository: CategoryRepository,
+    private val transactionId: Long? = null
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(AddTransactionUiState())
+    private val _uiState = MutableStateFlow(AddTransactionUiState(isEditing = transactionId != null))
     val uiState: StateFlow<AddTransactionUiState> = _uiState.asStateFlow()
 
     init {
         viewModelScope.launch {
             categoryRepository.getCategories().collect { categories ->
-                _uiState.update { it.copy(categories = categories) }
+                _uiState.update { state ->
+                    val resolved = state.category
+                        ?: state.pendingCategoryId?.let { id -> categories.firstOrNull { it.id == id } }
+                    state.copy(categories = categories, category = resolved)
+                }
+            }
+        }
+
+        if (transactionId != null) {
+            viewModelScope.launch {
+                val transaction = repository.getTransaction(transactionId).first() ?: return@launch
+                _uiState.update { state ->
+                    state.copy(
+                        amountText = formatAmountText(transaction.amount),
+                        type = transaction.type,
+                        category = state.categories.firstOrNull { it.id == transaction.categoryId },
+                        pendingCategoryId = transaction.categoryId,
+                        merchant = transaction.merchant.orEmpty(),
+                        description = transaction.description.orEmpty(),
+                        date = transaction.transactionDate.toLocalDate(),
+                        time = transaction.transactionDate.toLocalTime(),
+                        transactionId = transaction.id,
+                        createdAt = transaction.createdAt,
+                        source = transaction.source
+                    )
+                }
             }
         }
     }
+
+    private fun formatAmountText(amount: Double): String =
+        if (amount == amount.toLong().toDouble()) amount.toLong().toString() else amount.toString()
 
     fun onAmountChange(value: String) {
         _uiState.update { it.copy(amountText = value) }
@@ -66,28 +95,33 @@ class AddTransactionViewModel(
         _uiState.update { it.copy(isSaving = true) }
 
         viewModelScope.launch {
-            repository.addTransaction(
-                Transaction(
-                    id = 0,
-                    amount = amount,
-                    type = state.type,
-                    categoryId = category.id,
-                    merchant = state.merchant.ifBlank { null },
-                    description = state.description.ifBlank { null },
-                    transactionDate = state.date.atTime(LocalTime.now()),
-                    source = TransactionSource.MANUAL
-                )
+            val transaction = Transaction(
+                id = state.transactionId,
+                amount = amount,
+                type = state.type,
+                categoryId = category.id,
+                merchant = state.merchant.ifBlank { null },
+                description = state.description.ifBlank { null },
+                transactionDate = state.date.atTime(if (state.isEditing) state.time else LocalTime.now()),
+                source = state.source,
+                createdAt = state.createdAt
             )
+            if (state.isEditing) {
+                repository.updateTransaction(transaction)
+            } else {
+                repository.addTransaction(transaction)
+            }
             _uiState.update { it.copy(isSaving = false, saveComplete = true) }
         }
     }
 
     class Factory(
         private val repository: TransactionRepository,
-        private val categoryRepository: CategoryRepository
+        private val categoryRepository: CategoryRepository,
+        private val transactionId: Long? = null
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            AddTransactionViewModel(repository, categoryRepository) as T
+            AddTransactionViewModel(repository, categoryRepository, transactionId) as T
     }
 }

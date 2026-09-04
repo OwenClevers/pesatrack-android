@@ -70,12 +70,12 @@ private val dateFormat = DateTimeFormatter.ofPattern("d MMM yyyy")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddTransactionScreen(navController: NavController) {
+fun AddTransactionScreen(navController: NavController, transactionId: Long? = null) {
     val context = LocalContext.current
     val repository = remember { AppModule.provideTransactionRepository(context) }
     val categoryRepository = remember { AppModule.provideCategoryRepository(context) }
     val viewModel: AddTransactionViewModel = viewModel(
-        factory = AddTransactionViewModel.Factory(repository, categoryRepository)
+        factory = AddTransactionViewModel.Factory(repository, categoryRepository, transactionId)
     )
     val uiState by viewModel.uiState.collectAsState()
 
@@ -89,7 +89,7 @@ fun AddTransactionScreen(navController: NavController) {
         containerColor = Surface,
         topBar = {
             TopAppBar(
-                title = { Text("Add transaction") },
+                title = { Text(if (uiState.isEditing) "Edit transaction" else "Add transaction") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
@@ -172,7 +172,7 @@ fun AddTransactionScreen(navController: NavController) {
                 shape = RoundedCornerShape(11.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Primary)
             ) {
-                Text("Save transaction")
+                Text(if (uiState.isEditing) "Save changes" else "Save transaction")
             }
         }
     }
