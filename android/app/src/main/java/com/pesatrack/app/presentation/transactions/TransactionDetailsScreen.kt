@@ -15,7 +15,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.Payments
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -140,13 +139,6 @@ fun TransactionDetailsScreen(navController: NavController, transactionId: Long) 
                         DetailRow(
                             label = "Date",
                             value = transaction.transactionDate.format(dateTimeFormat)
-                        )
-                        HorizontalDivider(color = Divider)
-                        DetailRow(
-                            label = "Payment method",
-                            value = "Cash",
-                            icon = Icons.Outlined.Payments,
-                            iconTint = TextSecondary
                         )
                         transaction.description?.let { description ->
                             HorizontalDivider(color = Divider)
