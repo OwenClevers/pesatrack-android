@@ -40,6 +40,18 @@ import com.pesatrack.app.ui.theme.TextSecondary
 
 private val FabSize = 56.dp
 
+private fun NavController.navigateToTab(route: String) {
+    // Anchored on Dashboard, not graph.findStartDestination(): Splash pops itself
+    // with inclusive = true after launch, so it's never in the back stack to pop to.
+    navigate(route) {
+        popUpTo(Screen.Dashboard.route) {
+            saveState = true
+        }
+        launchSingleTop = true
+        restoreState = true
+    }
+}
+
 @Composable
 fun PesaBottomBar(
     navController: NavController,
@@ -62,21 +74,13 @@ fun PesaBottomBar(
                         icon = Icons.Outlined.Home,
                         label = "Home",
                         selected = currentRoute == Screen.Dashboard.route,
-                        onClick = {
-                            if (currentRoute != Screen.Dashboard.route) {
-                                navController.navigate(Screen.Dashboard.route)
-                            }
-                        }
+                        onClick = { navController.navigateToTab(Screen.Dashboard.route) }
                     )
                     BottomBarItem(
                         icon = Icons.AutoMirrored.Outlined.List,
                         label = "Transactions",
                         selected = currentRoute == Screen.Transactions.route,
-                        onClick = {
-                            if (currentRoute != Screen.Transactions.route) {
-                                navController.navigate(Screen.Transactions.route)
-                            }
-                        }
+                        onClick = { navController.navigateToTab(Screen.Transactions.route) }
                     )
 
                     Box(modifier = Modifier.width(FabSize))
