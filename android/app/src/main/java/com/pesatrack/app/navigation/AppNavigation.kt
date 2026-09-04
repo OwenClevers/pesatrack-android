@@ -1,12 +1,15 @@
 package com.pesatrack.app.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.pesatrack.app.presentation.dashboard.DashboardScreen
 import com.pesatrack.app.presentation.splash.SplashScreen
 import com.pesatrack.app.presentation.transactions.AddTransactionScreen
+import com.pesatrack.app.presentation.transactions.TransactionDetailsScreen
 import com.pesatrack.app.presentation.transactions.TransactionsScreen
 
 @Composable
@@ -33,6 +36,14 @@ fun AppNavigation() {
 
         composable(Screen.Transactions.route) {
             TransactionsScreen(navController)
+        }
+
+        composable(
+            route = Screen.TransactionDetails.route,
+            arguments = listOf(navArgument("transactionId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val transactionId = backStackEntry.arguments?.getLong("transactionId") ?: return@composable
+            TransactionDetailsScreen(navController, transactionId)
         }
     }
 }

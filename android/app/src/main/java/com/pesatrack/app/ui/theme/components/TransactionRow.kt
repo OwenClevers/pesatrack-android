@@ -1,6 +1,7 @@
 package com.pesatrack.app.ui.theme.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -28,6 +29,7 @@ private val dateFormat = DateTimeFormatter.ofPattern("d MMM yyyy")
 fun TransactionRow(
     transaction: Transaction,
     category: Category,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val visual = category.visual()
@@ -36,6 +38,7 @@ fun TransactionRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .clickable(onClick = onClick)
             .padding(vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

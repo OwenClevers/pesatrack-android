@@ -19,11 +19,20 @@ class TransactionRepositoryImpl(
             }
     }
 
+    override fun getTransaction(id: Long): Flow<Transaction?> {
+        return dao.getTransactionById(id)
+            .map { entity -> entity?.toDomain() }
+    }
+
     override suspend fun addTransaction(
         transaction: Transaction
     ) {
         dao.insert(
             transaction.toEntity()
         )
+    }
+
+    override suspend fun deleteTransaction(id: Long) {
+        dao.deleteById(id)
     }
 }

@@ -35,6 +35,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.pesatrack.app.di.AppModule
 import com.pesatrack.app.domain.model.Category
+import com.pesatrack.app.navigation.Screen
 import com.pesatrack.app.ui.theme.Background
 import com.pesatrack.app.ui.theme.Divider
 import com.pesatrack.app.ui.theme.PrimaryDark
@@ -158,7 +159,10 @@ fun TransactionsScreen(navController: NavController) {
                                     TransactionRow(
                                         transaction = transaction,
                                         category = uiState.categoriesById[transaction.categoryId]
-                                            ?: Category.unknown(transaction.categoryId)
+                                            ?: Category.unknown(transaction.categoryId),
+                                        onClick = {
+                                            navController.navigate(Screen.TransactionDetails.route(transaction.id))
+                                        }
                                     )
                                 }
                             }
