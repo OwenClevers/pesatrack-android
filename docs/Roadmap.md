@@ -1,17 +1,5 @@
 # Roadmap
 
-## User profile
-
-Dashboard's "Hello, Owen" (`DashboardScreen.kt`) is a hardcoded string
-literal — there's no user model behind it, and Settings has no way to
-change the displayed name.
-
-**Needs:** a `Profile` concept (at minimum a display name; the design
-spec also shows an email and avatar) persisted the same way as
-`OnboardingPreferences`/`ThemePreferences` (SharedPreferences, since
-there's no backend or account system), a Settings row to edit it, and
-`DashboardScreen` reading it instead of the literal.
-
 ## Transaction search and filter
 
 Removed from the Transactions screen in the dead-UI sweep since neither
