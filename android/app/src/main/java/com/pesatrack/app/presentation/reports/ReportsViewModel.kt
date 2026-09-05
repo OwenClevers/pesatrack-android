@@ -1,9 +1,12 @@
 package com.pesatrack.app.presentation.reports
 
+import android.content.Context
+import android.net.Uri
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.pesatrack.app.data.export.CsvExporter
 import com.pesatrack.app.domain.model.Category
 import com.pesatrack.app.domain.model.Transaction
 import com.pesatrack.app.domain.model.TransactionType
@@ -16,8 +19,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import java.time.YearMonth
 import kotlin.math.floor
 import kotlin.math.log10
@@ -31,28 +37,63 @@ private val OtherColor = Color(0xFFB6BCC6)
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ReportsViewModel(
-    transactionRepository: TransactionRepository,
-    categoryRepository: CategoryRepository
+    private val context: Context,
+    private val transactionRepository: TransactionRepository,
+    private val categoryRepository: CategoryRepository
 ) : ViewModel() {
 
     private val selectedMonth = MutableStateFlow(YearMonth.now())
+    private val exportStatus = MutableStateFlow(ExportStatus())
 
     val uiState: StateFlow<ReportsUiState> =
-        selectedMonth
-            .flatMapLatest { month ->
+        combine(
+            selectedMonth.flatMapLatest { month ->
                 combine(
                     transactionRepository.getTransactions(),
                     categoryRepository.getCategories()
                 ) { transactions, categories -> buildState(month, transactions, categories) }
-            }
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5_000),
-                initialValue = ReportsUiState()
-            )
+            },
+            exportStatus
+        ) { reportsState, status ->
+            reportsState.copy(isExporting = status.isExporting, exportMessage = status.message)
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = ReportsUiState()
+        )
 
     fun onMonthSelected(month: YearMonth) {
         selectedMonth.value = month
+    }
+
+    // Exports every transaction (income and expense) in the currently
+    // selected period -- broader than the expense-only chart data above,
+    // since a CSV export is meant to be a full ledger for the period.
+    fun exportCsv(uri: Uri) {
+        viewModelScope.launch {
+            exportStatus.value = ExportStatus(isExporting = true)
+            val month = selectedMonth.value
+            val result = runCatching {
+                val transactions = transactionRepository.getTransactions().first()
+                    .filter { YearMonth.from(it.transactionDate) == month }
+                val categoriesById = categoryRepository.getCategories().first().associateBy { it.id }
+                val csv = CsvExporter.toCsv(transactions, categoriesById)
+                context.contentResolver.openOutputStream(uri)?.use { stream ->
+                    stream.write(csv.toByteArray())
+                } ?: error("Could not open the selected file for writing.")
+            }
+            exportStatus.value = ExportStatus(
+                isExporting = false,
+                message = result.fold(
+                    onSuccess = { "Report exported." },
+                    onFailure = { e -> "Export failed: ${e.message}" }
+                )
+            )
+        }
+    }
+
+    fun dismissExportMessage() {
+        exportStatus.update { it.copy(message = null) }
     }
 
     private fun buildState(
@@ -125,11 +166,19 @@ class ReportsViewModel(
     }
 
     class Factory(
+        context: Context,
         private val transactionRepository: TransactionRepository,
         private val categoryRepository: CategoryRepository
     ) : ViewModelProvider.Factory {
+        private val appContext = context.applicationContext
+
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            ReportsViewModel(transactionRepository, categoryRepository) as T
+            ReportsViewModel(appContext, transactionRepository, categoryRepository) as T
     }
 }
+
+private data class ExportStatus(
+    val isExporting: Boolean = false,
+    val message: String? = null
+)

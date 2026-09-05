@@ -13,15 +13,6 @@ type + categoryId + transactionDate, maybe merchant) for transactions
 without an `smsCode`, checked the same way `importMpesaTransaction`
 checks the unique index today.
 
-## Report export
-
-The Reports share icon was removed since nothing backed it.
-
-**Needs:** an actual export implementation (CSV at minimum, matching the
-data already computed in `ReportsViewModel`) written to a file and
-shared via `Intent.ACTION_SEND`, plus the share icon back in
-`ReportsScreen`.
-
 ## Budget alert notifications
 
 Onboarding's third page used to promise this ("get alerts when you are
