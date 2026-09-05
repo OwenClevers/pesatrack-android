@@ -2,6 +2,7 @@ package com.pesatrack.app.data.database.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.pesatrack.app.data.database.entity.CategoryEntity
 import kotlinx.coroutines.flow.Flow
@@ -37,4 +38,14 @@ interface CategoryDao {
         FROM categories
     """)
     suspend fun getMaxId(): Long?
+
+    // Used for full-database restore: wipe then bulk-insert entities that already
+    // carry their original ids, matching TransactionDao/BudgetDao.insertAll.
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(categories: List<CategoryEntity>)
+
+    @Query("""
+        DELETE FROM categories
+    """)
+    suspend fun deleteAll()
 }

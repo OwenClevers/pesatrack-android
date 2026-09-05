@@ -44,4 +44,15 @@ interface TransactionDao {
         WHERE categoryId = :categoryId
     """)
     suspend fun countByCategory(categoryId: Long): Int
+
+    // Used for full-database restore: wipe then bulk-insert entities that already
+    // carry their original ids, so transactions/budgets referencing those category
+    // ids stay consistent without any remapping.
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(transactions: List<TransactionEntity>)
+
+    @Query("""
+        DELETE FROM transactions
+    """)
+    suspend fun deleteAll()
 }

@@ -2,6 +2,7 @@ package com.pesatrack.app.di
 
 import android.content.Context
 import androidx.room.Room
+import com.pesatrack.app.data.backup.BackupManager
 import com.pesatrack.app.data.database.AppDatabase
 import com.pesatrack.app.data.database.MIGRATION_1_2
 import com.pesatrack.app.data.database.MIGRATION_2_3
@@ -70,6 +71,16 @@ object AppModule {
 
     fun provideSmsReader(context: Context): SmsReader =
         SmsReader(context.applicationContext)
+
+    // Not cached as a singleton like the repositories above -- it's cheap to
+    // build and only used from the Backup screen, so there's no shared state to
+    // preserve across recompositions.
+    fun provideBackupManager(context: Context): BackupManager =
+        BackupManager(
+            provideTransactionRepository(context),
+            provideCategoryRepository(context),
+            provideBudgetRepository(context)
+        )
 
     // Registered SmsParser implementations, one per supported sender. A bank
     // parser is a future milestone -- adding it here (and nowhere else) is

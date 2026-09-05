@@ -42,6 +42,10 @@ class FakeTransactionRepository(
         transactions.update { it + transaction }
         return true
     }
+
+    override suspend fun replaceAll(transactions: List<Transaction>) {
+        this.transactions.value = transactions
+    }
 }
 
 /** In-memory [CategoryRepository] fake for ViewModel unit tests. */
@@ -74,6 +78,10 @@ class FakeCategoryRepository(
         categories.update { list -> list.filterNot { it.id == id } }
         return CategoryDeleteResult.Deleted
     }
+
+    override suspend fun replaceAll(categories: List<Category>) {
+        this.categories.value = categories
+    }
 }
 
 /** In-memory [BudgetRepository] fake for ViewModel unit tests. */
@@ -86,11 +94,25 @@ class FakeBudgetRepository(
     override fun getBudgets(month: YearMonth): Flow<List<Budget>> =
         budgets.map { list -> list.filter { it.month == month } }
 
+    override suspend fun getAllBudgets(): List<Budget> = budgets.value
+
     override suspend fun upsertBudget(budget: Budget) {
-        budgets.update { list -> list.filterNot { it.id == budget.id } + budget }
+        val resolvedId = if (budget.id != 0L) {
+            budget.id
+        } else {
+            (budgets.value.maxOfOrNull { it.id } ?: 0) + 1
+        }
+        budgets.update { list ->
+            list.filterNot { it.id == resolvedId || (it.categoryId == budget.categoryId && it.month == budget.month) } +
+                budget.copy(id = resolvedId)
+        }
     }
 
     override suspend fun deleteBudget(id: Long) {
         budgets.update { list -> list.filterNot { it.id == id } }
+    }
+
+    override suspend fun replaceAll(budgets: List<Budget>) {
+        this.budgets.value = budgets
     }
 }

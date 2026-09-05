@@ -17,4 +17,5 @@ sealed class Screen(val route: String) {
     object Settings : Screen("settings")
     object Categories : Screen("categories")
     object MpesaImport : Screen("mpesa_import")
+    object Backup : Screen("backup")
 }
