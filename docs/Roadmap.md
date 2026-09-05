@@ -22,14 +22,6 @@ data already computed in `ReportsViewModel`) written to a file and
 shared via `Intent.ACTION_SEND`, plus the share icon back in
 `ReportsScreen`.
 
-## Security lock
-
-Settings row removed in the dead-UI sweep.
-
-**Needs:** a PIN and/or biometric gate (`BiometricPrompt`) in front of
-`AppNavigation`'s start destination, a way to set/change the PIN stored
-in `EncryptedSharedPreferences`, and a Settings row to enable/disable it.
-
 ## Budget alert notifications
 
 Onboarding's third page used to promise this ("get alerts when you are
