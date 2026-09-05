@@ -1,5 +1,43 @@
 # Release notes
 
+## PesaTrack v0.4.0
+
+`develop` merged into `main` at this commit. A completeness audit against
+`docs/pesatrack-design-spec.html` covering dead UI, spec gaps, and
+half-wired features (data layer present but not fully connected to the
+UI, the same shape as last release's missing Budgets write path) turned
+up four issues, all fixed here.
+
+### Category icon and color customization
+`Category.colorKey` was persisted through the whole Room stack (seed
+data, entity, mapper) but never actually read — `CategoryVisuals.visual()`
+derived both icon and color from a single hardcoded switch on `iconKey`,
+and `addCategory()` hardcoded every new category to `iconKey = "other"`.
+Any category a user created was permanently stuck looking like "Other."
+`visual()` now reads `colorKey` independently of `iconKey`, and the
+add/rename sheet gets icon and color pickers so a custom category can
+look like anything a seeded one can. Seeded categories are unaffected,
+since their `colorKey` already equals their `iconKey` — exactly the
+pairing the old hardcoded switch used.
+
+### Budget delete path
+`BudgetDao`/`BudgetRepository` only ever had `upsert` — once a category
+was budgeted there was no way to remove it, only re-limit it. Added
+`deleteById`/`deleteBudget`, and a Delete button with a confirmation
+dialog in `BudgetSheet`, matching how Categories already handles delete.
+
+### Corrected onboarding copy
+Onboarding's third page promised budget alerts ("get alerts when you are
+nearing your limits"), but no notification system exists anywhere in the
+app. Reworded it to describe what budgets actually do — the percent and
+health-color progress each `BudgetCard` already shows.
+
+### Removed unreachable DAO methods
+Deleted `TransactionDao.getLatestTransaction()` and `.deleteAll()`,
+neither of which was ever called from `TransactionRepository` or
+anywhere else — leftovers from before smsCode-based dedup and an
+unshipped "reset app data" feature, respectively.
+
 ## PesaTrack v0.3.0
 
 `develop` merged into `main` at this commit.
