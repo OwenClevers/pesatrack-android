@@ -1,5 +1,29 @@
 # Release notes
 
+## PesaTrack v0.4.2
+
+`develop` merged into `main` at this commit, consolidating v0.4.1's
+visual polish with a Roadmap update — the only new change past v0.4.1
+is the Roadmap addition below.
+
+### Onboarding illustration, splash wordmark, app icon (from v0.4.1)
+The onboarding donut illustration's wedges were redrawn as four even
+90° segments in the brand palette, after one arc's `large-arc-flag`
+produced a ~210° wedge instead of its intended share. The splash
+screen's placeholder "P" tile was replaced with the actual wordmark
+from `docs/pesatrack-design-spec.html` (stroked "P", three ascending
+bars) as a vector drawable, and the default Android Studio template
+launcher icon was replaced with an adaptive icon built from the same
+mark.
+
+### Roadmap update
+Added the remaining gaps surfaced by the completeness audit to
+`docs/Roadmap.md`, each with a short note on what it needs: user
+profile (Dashboard's "Hello, Owen" is a hardcoded literal), transaction
+search and filter, report export, backup and restore, security lock,
+budget alert notifications, and multi-currency. Bank SMS import was
+already listed.
+
 ## PesaTrack v0.4.1
 
 `develop` merged into `main` at this commit. Visual polish, no behavior
