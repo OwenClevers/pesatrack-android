@@ -3,6 +3,13 @@
 /local.properties
 **/local.properties
 
+# Release signing -- the keystore itself lives outside the repo entirely
+# (~/.android-keystores/); this file holds its path and passwords. See
+# CLAUDE.md's "Release signing" section.
+/keystore.properties
+*.jks
+*.keystore
+
 .idea/caches
 .idea/libraries
 .idea/modules.xml

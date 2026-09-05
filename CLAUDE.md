@@ -12,6 +12,42 @@ If either appears, delete it — the correct entry is `androidx-core-ktx`
 on `coreKtx = "1.10.1"`. This has recurred four times. Always check
 `git status` for unexpected changes to build files before building.
 
+## Release signing — critical, read before touching
+
+`android/app/build.gradle.kts` signs release builds using
+`android/keystore.properties` (gitignored, never commit it), which
+points at a keystore stored at
+`~/.android-keystores/pesatrack-release.jks` — deliberately outside the
+repo, so it can never be committed, cloned away, or wiped by a
+`git clean`.
+
+**Why this matters:** Android will only install an app as an *update*
+over an existing install (preserving its data) if the new APK is signed
+with the same certificate as the one already on the device. Lose this
+keystore, and every real device with PesaTrack installed can never
+receive another in-place update — the only way to install a
+differently-signed build is to uninstall first, which deletes all local
+data (transactions, budgets, categories) unless a backup was taken
+first via the app's own Backup screen.
+
+**This keystore has no other copy.** If it's lost, it's unrecoverable —
+back it up (e.g. a password manager attachment, encrypted archive) to
+at least one location off this machine. Never regenerate it "to fix a
+build error" -- a missing/wrong keystore.properties should be fixed by
+pointing back at the original file, not by creating a new keystore.
+
+`assembleRelease`/`bundleRelease` fail outright (rather than silently
+producing an unsigned or debug-signed APK) if
+`android/keystore.properties` is missing — expected on any machine
+that doesn't need to produce a release build (CI running tests, a
+fresh clone for debug-only work).
+
+Bump `versionCode` in `android/app/build.gradle.kts` before building a
+release meant to update an existing install — an APK with the same
+`versionCode` as what's already on the device can still be forced on
+via `adb install -r`, but won't be offered as an update through any
+normal install flow.
+
 ## Design rules
 
 No emoji anywhere in the UI — stroke icons only (Material Symbols
