@@ -5,6 +5,7 @@ import com.pesatrack.app.domain.model.Transaction
 import com.pesatrack.app.domain.model.TransactionSource
 import com.pesatrack.app.domain.model.TransactionType
 import com.pesatrack.app.fake.FakeCategoryRepository
+import com.pesatrack.app.fake.FakeMerchantCategoryRepository
 import com.pesatrack.app.fake.FakeTransactionRepository
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -50,7 +51,8 @@ class TransactionsViewModelTest {
         )
         val viewModel = TransactionsViewModel(
             FakeTransactionRepository(transactions),
-            FakeCategoryRepository(listOf(food))
+            FakeCategoryRepository(listOf(food)),
+            FakeMerchantCategoryRepository()
         )
         val job = launch { viewModel.uiState.collect { } }
         advanceUntilIdle()
@@ -80,7 +82,8 @@ class TransactionsViewModelTest {
         )
         val viewModel = TransactionsViewModel(
             FakeTransactionRepository(transactions),
-            FakeCategoryRepository(listOf(food))
+            FakeCategoryRepository(listOf(food)),
+            FakeMerchantCategoryRepository()
         )
         val job = launch { viewModel.uiState.collect { } }
         advanceUntilIdle()
@@ -102,7 +105,8 @@ class TransactionsViewModelTest {
         )
         val viewModel = TransactionsViewModel(
             FakeTransactionRepository(transactions),
-            FakeCategoryRepository(listOf(food))
+            FakeCategoryRepository(listOf(food)),
+            FakeMerchantCategoryRepository()
         )
         val job = launch { viewModel.uiState.collect { } }
         advanceUntilIdle()
@@ -121,7 +125,8 @@ class TransactionsViewModelTest {
         val transactions = listOf(tx(1, 500.0, merchant = "Naivas Supermarket"))
         val viewModel = TransactionsViewModel(
             FakeTransactionRepository(transactions),
-            FakeCategoryRepository(listOf(food))
+            FakeCategoryRepository(listOf(food)),
+            FakeMerchantCategoryRepository()
         )
         val job = launch { viewModel.uiState.collect { } }
         advanceUntilIdle()
@@ -142,7 +147,8 @@ class TransactionsViewModelTest {
         )
         val viewModel = TransactionsViewModel(
             FakeTransactionRepository(transactions),
-            FakeCategoryRepository(listOf(food))
+            FakeCategoryRepository(listOf(food)),
+            FakeMerchantCategoryRepository()
         )
         val job = launch { viewModel.uiState.collect { } }
         advanceUntilIdle()
@@ -164,7 +170,8 @@ class TransactionsViewModelTest {
         )
         val viewModel = TransactionsViewModel(
             FakeTransactionRepository(transactions),
-            FakeCategoryRepository(listOf(food, transport))
+            FakeCategoryRepository(listOf(food, transport)),
+            FakeMerchantCategoryRepository()
         )
         val job = launch { viewModel.uiState.collect { } }
         advanceUntilIdle()
@@ -187,7 +194,8 @@ class TransactionsViewModelTest {
         )
         val viewModel = TransactionsViewModel(
             FakeTransactionRepository(transactions),
-            FakeCategoryRepository(listOf(food))
+            FakeCategoryRepository(listOf(food)),
+            FakeMerchantCategoryRepository()
         )
         val job = launch { viewModel.uiState.collect { } }
         advanceUntilIdle()
@@ -218,7 +226,8 @@ class TransactionsViewModelTest {
         )
         val viewModel = TransactionsViewModel(
             FakeTransactionRepository(transactions),
-            FakeCategoryRepository(listOf(food))
+            FakeCategoryRepository(listOf(food)),
+            FakeMerchantCategoryRepository()
         )
         val job = launch { viewModel.uiState.collect { } }
         advanceUntilIdle()
@@ -229,6 +238,88 @@ class TransactionsViewModelTest {
 
         val results = viewModel.uiState.value.groups.flatMap { it.transactions }
         assertEquals(listOf(2L), results.map { it.id })
+
+        job.cancel()
+    }
+
+    @Test
+    fun `toggling selection adds and removes ids`() = runTest {
+        val transactions = listOf(tx(1, 500.0), tx(2, 300.0))
+        val viewModel = TransactionsViewModel(
+            FakeTransactionRepository(transactions),
+            FakeCategoryRepository(listOf(food)),
+            FakeMerchantCategoryRepository()
+        )
+        val job = launch { viewModel.uiState.collect { } }
+        advanceUntilIdle()
+
+        viewModel.onToggleSelected(1)
+        viewModel.onToggleSelected(2)
+        advanceUntilIdle()
+        assertEquals(setOf(1L, 2L), viewModel.uiState.value.selectedIds)
+
+        viewModel.onToggleSelected(1)
+        advanceUntilIdle()
+        assertEquals(setOf(2L), viewModel.uiState.value.selectedIds)
+
+        job.cancel()
+    }
+
+    @Test
+    fun `clearSelection empties the selected ids`() = runTest {
+        val transactions = listOf(tx(1, 500.0), tx(2, 300.0))
+        val viewModel = TransactionsViewModel(
+            FakeTransactionRepository(transactions),
+            FakeCategoryRepository(listOf(food)),
+            FakeMerchantCategoryRepository()
+        )
+        val job = launch { viewModel.uiState.collect { } }
+        advanceUntilIdle()
+
+        viewModel.onToggleSelected(1)
+        viewModel.onToggleSelected(2)
+        advanceUntilIdle()
+
+        viewModel.clearSelection()
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.selectedIds.isEmpty())
+
+        job.cancel()
+    }
+
+    @Test
+    fun `assignCategoryToSelected updates every selected transaction and clears selection`() = runTest {
+        val transactions = listOf(
+            tx(1, 500.0, categoryId = food.id, merchant = "Naivas"),
+            tx(2, 300.0, categoryId = food.id, merchant = "Java House"),
+            tx(3, 200.0, categoryId = food.id, merchant = "Shell")
+        )
+        val transactionRepository = FakeTransactionRepository(transactions)
+        val merchantCategoryRepository = FakeMerchantCategoryRepository()
+        val viewModel = TransactionsViewModel(
+            transactionRepository,
+            FakeCategoryRepository(listOf(food, transport)),
+            merchantCategoryRepository
+        )
+        val job = launch { viewModel.uiState.collect { } }
+        advanceUntilIdle()
+
+        viewModel.onToggleSelected(1)
+        viewModel.onToggleSelected(2)
+        advanceUntilIdle()
+
+        viewModel.assignCategoryToSelected(transport.id)
+        advanceUntilIdle()
+
+        val updated = viewModel.uiState.value.groups.flatMap { it.transactions }.associateBy { it.id }
+        assertEquals(transport.id, updated.getValue(1).categoryId)
+        assertEquals(transport.id, updated.getValue(2).categoryId)
+        // Unselected transaction is untouched.
+        assertEquals(food.id, updated.getValue(3).categoryId)
+
+        assertEquals(transport.id, merchantCategoryRepository.getCategoryId("Naivas"))
+        assertEquals(transport.id, merchantCategoryRepository.getCategoryId("Java House"))
+        assertTrue(viewModel.uiState.value.selectedIds.isEmpty())
 
         job.cancel()
     }

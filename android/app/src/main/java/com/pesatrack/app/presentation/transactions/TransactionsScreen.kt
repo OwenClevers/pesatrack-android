@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.CalendarToday
+import androidx.compose.material.icons.outlined.Category as CategoryIcon
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
@@ -84,11 +85,14 @@ fun TransactionsScreen(navController: NavController) {
     val context = LocalContext.current
     val repository = remember { AppModule.provideTransactionRepository(context) }
     val categoryRepository = remember { AppModule.provideCategoryRepository(context) }
+    val merchantCategoryRepository = remember { AppModule.provideMerchantCategoryRepository(context) }
     val viewModel: TransactionsViewModel = viewModel(
-        factory = TransactionsViewModel.Factory(repository, categoryRepository)
+        factory = TransactionsViewModel.Factory(repository, categoryRepository, merchantCategoryRepository)
     )
     val uiState by viewModel.uiState.collectAsState()
     var showFilterSheet by remember { mutableStateOf(false) }
+    var showBulkCategorySheet by remember { mutableStateOf(false) }
+    val selectionMode = uiState.selectedIds.isNotEmpty()
 
     StatusBarIcons(darkIcons = false)
 
@@ -108,63 +112,93 @@ fun TransactionsScreen(navController: NavController) {
                     .fillMaxWidth()
                     .background(PrimaryDark)
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                            contentDescription = "Back",
-                            tint = Color.White
+                if (selectionMode) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(onClick = { viewModel.clearSelection() }) {
+                            Icon(
+                                imageVector = Icons.Outlined.Close,
+                                contentDescription = "Cancel selection",
+                                tint = Color.White
+                            )
+                        }
+                        Text(
+                            text = "${uiState.selectedIds.size} selected",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = Color.White,
+                            modifier = Modifier.weight(1f)
+                        )
+                        IconButton(onClick = { showBulkCategorySheet = true }) {
+                            Icon(
+                                imageVector = Icons.Outlined.CategoryIcon,
+                                contentDescription = "Assign category",
+                                tint = Color.White
+                            )
+                        }
+                    }
+                } else {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                                contentDescription = "Back",
+                                tint = Color.White
+                            )
+                        }
+                        Text(
+                            text = "Transactions",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = Color.White
                         )
                     }
-                    Text(
-                        text = "Transactions",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = Color.White
-                    )
-                }
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    OutlinedTextField(
-                        value = uiState.searchQuery,
-                        onValueChange = viewModel::onSearchQueryChange,
-                        modifier = Modifier.weight(1f),
-                        placeholder = {
-                            Text("Search transactions", color = Color.White.copy(alpha = 0.7f))
-                        },
-                        leadingIcon = {
-                            Icon(Icons.Outlined.Search, contentDescription = null, tint = Color.White)
-                        },
-                        singleLine = true,
-                        shape = RoundedCornerShape(10.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Color.White.copy(alpha = 0.16f),
-                            unfocusedContainerColor = Color.White.copy(alpha = 0.16f),
-                            focusedBorderColor = Color.Transparent,
-                            unfocusedBorderColor = Color.Transparent,
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
-                            cursorColor = Color.White,
-                            focusedLeadingIconColor = Color.White,
-                            unfocusedLeadingIconColor = Color.White
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = uiState.searchQuery,
+                            onValueChange = viewModel::onSearchQueryChange,
+                            modifier = Modifier.weight(1f),
+                            placeholder = {
+                                Text("Search transactions", color = Color.White.copy(alpha = 0.7f))
+                            },
+                            leadingIcon = {
+                                Icon(Icons.Outlined.Search, contentDescription = null, tint = Color.White)
+                            },
+                            singleLine = true,
+                            shape = RoundedCornerShape(10.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedContainerColor = Color.White.copy(alpha = 0.16f),
+                                unfocusedContainerColor = Color.White.copy(alpha = 0.16f),
+                                focusedBorderColor = Color.Transparent,
+                                unfocusedBorderColor = Color.Transparent,
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White,
+                                cursorColor = Color.White,
+                                focusedLeadingIconColor = Color.White,
+                                unfocusedLeadingIconColor = Color.White
+                            )
                         )
-                    )
-                    IconButton(onClick = { showFilterSheet = true }) {
-                        Icon(
-                            imageVector = Icons.Outlined.FilterList,
-                            contentDescription = "Filter",
-                            tint = if (uiState.filter.isActive) Color.White else Color.White.copy(alpha = 0.7f)
-                        )
+                        IconButton(onClick = { showFilterSheet = true }) {
+                            Icon(
+                                imageVector = Icons.Outlined.FilterList,
+                                contentDescription = "Filter",
+                                tint = if (uiState.filter.isActive) Color.White else Color.White.copy(alpha = 0.7f)
+                            )
+                        }
                     }
                 }
             }
@@ -208,8 +242,15 @@ fun TransactionsScreen(navController: NavController) {
                                         category = uiState.categoriesById[transaction.categoryId]
                                             ?: Category.unknown(transaction.categoryId),
                                         onClick = {
-                                            navController.navigate(Screen.TransactionDetails.route(transaction.id))
-                                        }
+                                            if (selectionMode) {
+                                                viewModel.onToggleSelected(transaction.id)
+                                            } else {
+                                                navController.navigate(Screen.TransactionDetails.route(transaction.id))
+                                            }
+                                        },
+                                        onLongClick = { viewModel.onToggleSelected(transaction.id) },
+                                        selectionMode = selectionMode,
+                                        selected = transaction.id in uiState.selectedIds
                                     )
                                 }
                             }
@@ -230,6 +271,71 @@ fun TransactionsScreen(navController: NavController) {
                 showFilterSheet = false
             }
         )
+    }
+
+    if (showBulkCategorySheet) {
+        BulkCategorySheet(
+            categories = uiState.categories,
+            onDismiss = { showBulkCategorySheet = false },
+            onSelect = { categoryId ->
+                viewModel.assignCategoryToSelected(categoryId)
+                showBulkCategorySheet = false
+            }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun BulkCategorySheet(
+    categories: List<Category>,
+    onDismiss: () -> Unit,
+    onSelect: (Long) -> Unit
+) {
+    val sheetState = rememberModalBottomSheetState()
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = Surface
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 8.dp)
+                .padding(bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = "Assign category",
+                style = MaterialTheme.typography.titleMedium,
+                color = TextPrimary,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
+            categories.forEach { category ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .clickable { onSelect(category.id) }
+                        .padding(vertical = 12.dp, horizontal = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Icon(
+                        imageVector = category.visual().icon,
+                        contentDescription = null,
+                        tint = category.visual().content
+                    )
+                    Text(
+                        text = category.name,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = TextPrimary
+                    )
+                }
+            }
+        }
     }
 }
 

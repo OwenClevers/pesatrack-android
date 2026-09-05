@@ -7,8 +7,11 @@ import com.pesatrack.app.data.database.AppDatabase
 import com.pesatrack.app.data.database.MIGRATION_1_2
 import com.pesatrack.app.data.database.MIGRATION_2_3
 import com.pesatrack.app.data.database.MIGRATION_3_4
+import com.pesatrack.app.data.database.MIGRATION_4_5
 import com.pesatrack.app.data.database.categorySeedCallback
 import com.pesatrack.app.data.repository.BudgetRepositoryImpl
+import com.pesatrack.app.data.repository.MerchantCategoryRepositoryImpl
+import com.pesatrack.app.data.sms.MerchantCategorizer
 import com.pesatrack.app.data.sms.MpesaSmsParser
 import com.pesatrack.app.data.sms.SmsParser
 import com.pesatrack.app.data.sms.SmsReader
@@ -16,6 +19,7 @@ import com.pesatrack.app.data.repository.CategoryRepositoryImpl
 import com.pesatrack.app.data.repository.TransactionRepositoryImpl
 import com.pesatrack.app.domain.repository.BudgetRepository
 import com.pesatrack.app.domain.repository.CategoryRepository
+import com.pesatrack.app.domain.repository.MerchantCategoryRepository
 import com.pesatrack.app.domain.repository.TransactionRepository
 
 object AppModule {
@@ -34,6 +38,9 @@ object AppModule {
     @Volatile
     private var budgetRepository: BudgetRepository? = null
 
+    @Volatile
+    private var merchantCategoryRepository: MerchantCategoryRepository? = null
+
     fun provideDatabase(context: Context): AppDatabase =
         database ?: synchronized(this) {
             database ?: Room.databaseBuilder(
@@ -41,7 +48,7 @@ object AppModule {
                 AppDatabase::class.java,
                 DATABASE_NAME
             )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                 .addCallback(categorySeedCallback)
                 .build()
                 .also { database = it }
@@ -68,6 +75,18 @@ object AppModule {
                 provideDatabase(context).budgetDao()
             ).also { budgetRepository = it }
         }
+
+    fun provideMerchantCategoryRepository(context: Context): MerchantCategoryRepository =
+        merchantCategoryRepository ?: synchronized(this) {
+            merchantCategoryRepository ?: MerchantCategoryRepositoryImpl(
+                provideDatabase(context).merchantCategoryDao()
+            ).also { merchantCategoryRepository = it }
+        }
+
+    // Not cached as a singleton -- cheap to build, and holding no state of its
+    // own beyond the repository above.
+    fun provideMerchantCategorizer(context: Context): MerchantCategorizer =
+        MerchantCategorizer(provideMerchantCategoryRepository(context))
 
     fun provideSmsReader(context: Context): SmsReader =
         SmsReader(context.applicationContext)
