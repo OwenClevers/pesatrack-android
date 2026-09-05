@@ -1,8 +1,11 @@
 package com.pesatrack.app.presentation.transactions
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.pesatrack.app.core.BudgetAlertPreferences
+import com.pesatrack.app.data.budget.BudgetAlertChecker
 import com.pesatrack.app.domain.model.Category
 import com.pesatrack.app.domain.model.Transaction
 import com.pesatrack.app.domain.model.TransactionType
@@ -18,11 +21,14 @@ import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.YearMonth
 
 class AddTransactionViewModel(
     private val repository: TransactionRepository,
     private val categoryRepository: CategoryRepository,
     private val merchantCategoryRepository: MerchantCategoryRepository,
+    private val budgetAlertChecker: BudgetAlertChecker,
+    private val context: Context,
     private val transactionId: Long? = null
 ) : ViewModel() {
 
@@ -129,6 +135,13 @@ class AddTransactionViewModel(
             transaction.merchant?.let { merchant ->
                 merchantCategoryRepository.learn(merchant, category.id)
             }
+            if (transaction.type == TransactionType.EXPENSE) {
+                budgetAlertChecker.check(
+                    category.id,
+                    YearMonth.from(transaction.transactionDate),
+                    BudgetAlertPreferences.enabledThresholds(context)
+                )
+            }
             _uiState.update { it.copy(isSaving = false, saveComplete = true) }
         }
     }
@@ -137,10 +150,21 @@ class AddTransactionViewModel(
         private val repository: TransactionRepository,
         private val categoryRepository: CategoryRepository,
         private val merchantCategoryRepository: MerchantCategoryRepository,
+        private val budgetAlertChecker: BudgetAlertChecker,
+        context: Context,
         private val transactionId: Long? = null
     ) : ViewModelProvider.Factory {
+        private val appContext = context.applicationContext
+
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            AddTransactionViewModel(repository, categoryRepository, merchantCategoryRepository, transactionId) as T
+            AddTransactionViewModel(
+                repository,
+                categoryRepository,
+                merchantCategoryRepository,
+                budgetAlertChecker,
+                appContext,
+                transactionId
+            ) as T
     }
 }

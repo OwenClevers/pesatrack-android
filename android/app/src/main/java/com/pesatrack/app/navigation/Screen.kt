@@ -2,7 +2,13 @@ package com.pesatrack.app.navigation
 
 sealed class Screen(val route: String) {
     object Splash : Screen("splash")
-    object Lock : Screen("lock")
+    object Lock : Screen("lock?next={next}") {
+        // "next" is a full route to land on once authenticated, from a cold
+        // start where there's no back stack entry to simply pop back to
+        // (see LockScreen.unlock()) -- e.g. a notification tap wants Budgets
+        // instead of the usual Dashboard.
+        fun route(next: String = Dashboard.route) = "lock?next=$next"
+    }
     object Onboarding : Screen("onboarding")
     object Dashboard : Screen("dashboard")
     object AddTransaction : Screen("add_transaction")
