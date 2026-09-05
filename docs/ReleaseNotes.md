@@ -1,5 +1,36 @@
 # Release notes
 
+## PesaTrack v0.5.0
+
+`develop` merged into `main` at this commit. Three more Roadmap items
+implemented.
+
+### User profile
+Dashboard's hardcoded "Hello, Owen" is replaced with a real name, or a
+generic "Hello there" when unset. Name and email live in
+SharedPreferences alongside the dark mode and onboarding flags, exposed
+reactively through a new `LocalProfileController` (mirroring
+`LocalDarkModeController`) so editing in Settings updates the Dashboard
+immediately. A `ProfileRow` at the top of Settings (avatar, name, email)
+opens an edit sheet; blanking a field clears it back to unset.
+
+### Transaction search and filter
+The search field is back in the Transactions app bar as a real
+`TextField`, filtering by merchant/description case-insensitively, with
+day grouping and the empty state reflecting the filtered results. A
+filter sheet behind the filter icon covers transaction type (all/
+expense/income), category, and a date range; search and filter combine.
+
+### Backup and restore
+Export the full database (transactions, categories, budgets) to a JSON
+file via the Storage Access Framework — the user picks the destination,
+no storage permissions needed. A schema version is included so future
+format changes are detectable. Restore reads a file back and offers a
+clear choice between Merge (keeps existing data, dedupes transactions
+by M-Pesa code and categories by name) and Replace (wipes everything
+and restores the backup's rows with their original ids). "Backup and
+restore" is back in Settings.
+
 ## PesaTrack v0.4.2
 
 `develop` merged into `main` at this commit, consolidating v0.4.1's
