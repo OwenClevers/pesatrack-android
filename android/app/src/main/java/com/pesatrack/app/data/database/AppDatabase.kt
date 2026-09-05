@@ -8,14 +8,21 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.pesatrack.app.data.database.converters.Converters
 import com.pesatrack.app.data.database.dao.BudgetDao
 import com.pesatrack.app.data.database.dao.CategoryDao
+import com.pesatrack.app.data.database.dao.MerchantCategoryDao
 import com.pesatrack.app.data.database.dao.TransactionDao
 import com.pesatrack.app.data.database.entity.BudgetEntity
 import com.pesatrack.app.data.database.entity.CategoryEntity
+import com.pesatrack.app.data.database.entity.MerchantCategoryEntity
 import com.pesatrack.app.data.database.entity.TransactionEntity
 
 @Database(
-    entities = [TransactionEntity::class, CategoryEntity::class, BudgetEntity::class],
-    version = 4,
+    entities = [
+        TransactionEntity::class,
+        CategoryEntity::class,
+        BudgetEntity::class,
+        MerchantCategoryEntity::class
+    ],
+    version = 5,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -26,6 +33,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun categoryDao(): CategoryDao
 
     abstract fun budgetDao(): BudgetDao
+
+    abstract fun merchantCategoryDao(): MerchantCategoryDao
 }
 
 val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -84,6 +93,20 @@ val MIGRATION_3_4 = object : Migration(3, 4) {
             """
             CREATE UNIQUE INDEX IF NOT EXISTS `index_transactions_smsCode`
             ON `transactions` (`smsCode`)
+            """.trimIndent()
+        )
+    }
+}
+
+val MIGRATION_4_5 = object : Migration(4, 5) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS `merchant_category_map` (
+                `merchantKey` TEXT NOT NULL,
+                `categoryId` INTEGER NOT NULL,
+                PRIMARY KEY(`merchantKey`)
+            )
             """.trimIndent()
         )
     }

@@ -79,8 +79,15 @@ fun MpesaImportScreen(navController: NavController) {
     val smsParsers = remember { AppModule.provideSmsParsers() }
     val transactionRepository = remember { AppModule.provideTransactionRepository(context) }
     val categoryRepository = remember { AppModule.provideCategoryRepository(context) }
+    val merchantCategorizer = remember { AppModule.provideMerchantCategorizer(context) }
     val viewModel: MpesaImportViewModel = viewModel(
-        factory = MpesaImportViewModel.Factory(smsReader, smsParsers, transactionRepository, categoryRepository)
+        factory = MpesaImportViewModel.Factory(
+            smsReader,
+            smsParsers,
+            transactionRepository,
+            categoryRepository,
+            merchantCategorizer
+        )
     )
     val uiState by viewModel.uiState.collectAsState()
 
