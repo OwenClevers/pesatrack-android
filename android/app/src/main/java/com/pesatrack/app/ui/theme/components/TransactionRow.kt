@@ -1,9 +1,12 @@
 package com.pesatrack.app.ui.theme.components
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -18,6 +21,7 @@ import com.pesatrack.app.domain.model.Transaction
 import com.pesatrack.app.domain.model.TransactionType
 import com.pesatrack.app.ui.theme.Expense
 import com.pesatrack.app.ui.theme.Income
+import com.pesatrack.app.ui.theme.Primary
 import com.pesatrack.app.ui.theme.TextPrimary
 import com.pesatrack.app.ui.theme.TextSecondary
 import java.time.format.DateTimeFormatter
@@ -25,12 +29,16 @@ import java.time.format.DateTimeFormatter
 private val timeFormat = DateTimeFormatter.ofPattern("hh:mm a")
 private val dateFormat = DateTimeFormatter.ofPattern("d MMM yyyy")
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TransactionRow(
     transaction: Transaction,
     category: Category,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onLongClick: (() -> Unit)? = null,
+    selectionMode: Boolean = false,
+    selected: Boolean = false
 ) {
     val visual = category.visual()
     val isIncome = transaction.type == TransactionType.INCOME
@@ -38,10 +46,19 @@ fun TransactionRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
             .padding(vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        if (selectionMode) {
+            Checkbox(
+                checked = selected,
+                onCheckedChange = null,
+                colors = CheckboxDefaults.colors(checkedColor = Primary)
+            )
+            Spacer(Modifier.width(4.dp))
+        }
+
         Box(
             modifier = Modifier
                 .size(40.dp)

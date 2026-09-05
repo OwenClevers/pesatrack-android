@@ -6,6 +6,7 @@ import com.pesatrack.app.domain.model.CategoryDeleteResult
 import com.pesatrack.app.domain.model.Transaction
 import com.pesatrack.app.domain.repository.BudgetRepository
 import com.pesatrack.app.domain.repository.CategoryRepository
+import com.pesatrack.app.domain.repository.MerchantCategoryRepository
 import com.pesatrack.app.domain.repository.TransactionRepository
 import java.time.YearMonth
 import kotlinx.coroutines.flow.Flow
@@ -114,5 +115,28 @@ class FakeBudgetRepository(
 
     override suspend fun replaceAll(budgets: List<Budget>) {
         this.budgets.value = budgets
+    }
+}
+
+/** In-memory [MerchantCategoryRepository] fake for ViewModel/classifier unit tests. */
+class FakeMerchantCategoryRepository(
+    initial: Map<String, Long> = emptyMap()
+) : MerchantCategoryRepository {
+
+    private val mappings = initial.toMutableMap()
+
+    private fun normalize(merchantName: String): String? {
+        val trimmed = merchantName.trim()
+        return if (trimmed.isEmpty()) null else trimmed.uppercase()
+    }
+
+    override suspend fun getCategoryId(merchantName: String): Long? {
+        val key = normalize(merchantName) ?: return null
+        return mappings[key]
+    }
+
+    override suspend fun learn(merchantName: String, categoryId: Long) {
+        val key = normalize(merchantName) ?: return
+        mappings[key] = categoryId
     }
 }

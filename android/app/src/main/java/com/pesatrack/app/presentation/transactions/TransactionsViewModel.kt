@@ -6,33 +6,40 @@ import androidx.lifecycle.viewModelScope
 import com.pesatrack.app.domain.model.Category
 import com.pesatrack.app.domain.model.Transaction
 import com.pesatrack.app.domain.repository.CategoryRepository
+import com.pesatrack.app.domain.repository.MerchantCategoryRepository
 import com.pesatrack.app.domain.repository.TransactionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 private val groupDateFormat = DateTimeFormatter.ofPattern("d MMM yyyy")
 
 class TransactionsViewModel(
-    transactionRepository: TransactionRepository,
-    categoryRepository: CategoryRepository
+    private val transactionRepository: TransactionRepository,
+    categoryRepository: CategoryRepository,
+    private val merchantCategoryRepository: MerchantCategoryRepository
 ) : ViewModel() {
 
     private val searchQuery = MutableStateFlow("")
     private val filter = MutableStateFlow(TransactionFilter())
+    private val selectedIds = MutableStateFlow<Set<Long>>(emptySet())
 
     val uiState: StateFlow<TransactionsUiState> =
         combine(
             transactionRepository.getTransactions(),
             categoryRepository.getCategories(),
             searchQuery,
-            filter
-        ) { transactions, categories, query, criteria ->
-            transactions.toTransactionsState(categories, query, criteria)
+            filter,
+            selectedIds
+        ) { transactions, categories, query, criteria, selected ->
+            transactions.toTransactionsState(categories, query, criteria, selected)
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
@@ -47,10 +54,39 @@ class TransactionsViewModel(
         filter.value = criteria
     }
 
+    fun onToggleSelected(id: Long) {
+        selectedIds.update { current -> if (id in current) current - id else current + id }
+    }
+
+    fun clearSelection() {
+        selectedIds.value = emptySet()
+    }
+
+    // Updates every selected transaction's category and, for ones with a
+    // merchant name, teaches MerchantCategorizer that mapping -- the same
+    // learning hook AddTransactionViewModel uses on a single edit, just
+    // applied to a whole batch at once.
+    fun assignCategoryToSelected(categoryId: Long) {
+        val ids = selectedIds.value
+        if (ids.isEmpty()) return
+
+        viewModelScope.launch {
+            val targets = transactionRepository.getTransactions().first().filter { it.id in ids }
+            targets.forEach { transaction ->
+                transactionRepository.updateTransaction(transaction.copy(categoryId = categoryId))
+                transaction.merchant?.let { merchant ->
+                    merchantCategoryRepository.learn(merchant, categoryId)
+                }
+            }
+            selectedIds.value = emptySet()
+        }
+    }
+
     private fun List<Transaction>.toTransactionsState(
         categories: List<Category>,
         query: String,
-        criteria: TransactionFilter
+        criteria: TransactionFilter,
+        selected: Set<Long>
     ): TransactionsUiState {
         val today = LocalDate.now()
         val yesterday = today.minusDays(1)
@@ -80,6 +116,7 @@ class TransactionsViewModel(
             categories = categories,
             searchQuery = query,
             filter = criteria,
+            selectedIds = selected,
             isLoading = false
         )
     }
@@ -101,10 +138,11 @@ class TransactionsViewModel(
 
     class Factory(
         private val transactionRepository: TransactionRepository,
-        private val categoryRepository: CategoryRepository
+        private val categoryRepository: CategoryRepository,
+        private val merchantCategoryRepository: MerchantCategoryRepository
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            TransactionsViewModel(transactionRepository, categoryRepository) as T
+            TransactionsViewModel(transactionRepository, categoryRepository, merchantCategoryRepository) as T
     }
 }

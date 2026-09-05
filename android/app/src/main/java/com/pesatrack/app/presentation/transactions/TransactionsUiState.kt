@@ -11,6 +11,10 @@ data class TransactionsUiState(
     val categories: List<Category> = emptyList(),
     val searchQuery: String = "",
     val filter: TransactionFilter = TransactionFilter(),
+    // Non-empty means selection mode is active -- long-pressing a row starts
+    // it, tapping other rows adds to it, and it's cleared explicitly rather
+    // than by navigating away (there's nowhere else selection would persist to).
+    val selectedIds: Set<Long> = emptySet(),
     val isLoading: Boolean = true
 )
 

@@ -7,6 +7,7 @@ import com.pesatrack.app.domain.model.Category
 import com.pesatrack.app.domain.model.Transaction
 import com.pesatrack.app.domain.model.TransactionType
 import com.pesatrack.app.domain.repository.CategoryRepository
+import com.pesatrack.app.domain.repository.MerchantCategoryRepository
 import com.pesatrack.app.domain.repository.TransactionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,6 +22,7 @@ import java.time.LocalTime
 class AddTransactionViewModel(
     private val repository: TransactionRepository,
     private val categoryRepository: CategoryRepository,
+    private val merchantCategoryRepository: MerchantCategoryRepository,
     private val transactionId: Long? = null
 ) : ViewModel() {
 
@@ -121,6 +123,12 @@ class AddTransactionViewModel(
             } else {
                 repository.addTransaction(transaction)
             }
+            // The user just told us this merchant belongs in this category --
+            // remember it so future imports/entries for the same merchant
+            // classify correctly without needing another correction.
+            transaction.merchant?.let { merchant ->
+                merchantCategoryRepository.learn(merchant, category.id)
+            }
             _uiState.update { it.copy(isSaving = false, saveComplete = true) }
         }
     }
@@ -128,10 +136,11 @@ class AddTransactionViewModel(
     class Factory(
         private val repository: TransactionRepository,
         private val categoryRepository: CategoryRepository,
+        private val merchantCategoryRepository: MerchantCategoryRepository,
         private val transactionId: Long? = null
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            AddTransactionViewModel(repository, categoryRepository, transactionId) as T
+            AddTransactionViewModel(repository, categoryRepository, merchantCategoryRepository, transactionId) as T
     }
 }

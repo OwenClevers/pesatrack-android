@@ -3,9 +3,9 @@ package com.pesatrack.app.presentation.mpesa
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.pesatrack.app.data.sms.MerchantCategorizer
 import com.pesatrack.app.data.sms.SmsParser
 import com.pesatrack.app.data.sms.SmsReader
-import com.pesatrack.app.domain.model.Category
 import com.pesatrack.app.domain.model.Transaction
 import com.pesatrack.app.domain.model.TransactionSource
 import com.pesatrack.app.domain.repository.CategoryRepository
@@ -21,7 +21,8 @@ class MpesaImportViewModel(
     private val smsReader: SmsReader,
     private val parsers: List<SmsParser>,
     private val transactionRepository: TransactionRepository,
-    private val categoryRepository: CategoryRepository
+    private val categoryRepository: CategoryRepository,
+    private val merchantCategorizer: MerchantCategorizer
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MpesaImportUiState())
@@ -58,7 +59,7 @@ class MpesaImportViewModel(
                         id = 0,
                         amount = parsed.amount,
                         type = parsed.type,
-                        categoryId = matchCategory(parsed.counterparty, categories),
+                        categoryId = merchantCategorizer.classify(parsed.counterparty, categories),
                         merchant = parsed.counterparty,
                         description = null,
                         transactionDate = parsed.timestamp,
@@ -81,37 +82,11 @@ class MpesaImportViewModel(
         private val smsReader: SmsReader,
         private val parsers: List<SmsParser>,
         private val transactionRepository: TransactionRepository,
-        private val categoryRepository: CategoryRepository
+        private val categoryRepository: CategoryRepository,
+        private val merchantCategorizer: MerchantCategorizer
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            MpesaImportViewModel(smsReader, parsers, transactionRepository, categoryRepository) as T
+            MpesaImportViewModel(smsReader, parsers, transactionRepository, categoryRepository, merchantCategorizer) as T
     }
-}
-
-// Simple keyword match against the counterparty text, keyed by the seeded categories'
-// iconKey. Falls back to "other" for anything unrecognised (most person-to-person
-// transfers, since they carry a name rather than a business/merchant keyword).
-private val categoryKeywords: Map<String, List<String>> = mapOf(
-    "food" to listOf("RESTAURANT", "CAFE", "HOTEL", "EATERY", "KFC", "JAVA", "PIZZA", "CHICKEN", "BAKERY"),
-    "fuel" to listOf("PETROL", "FUEL", "SHELL", "TOTAL ENERGIES", "OILIBYA", "RUBIS", "GAS STATION"),
-    "shopping" to listOf("SUPERMARKET", "MART", "SHOP", "STORE", "NAIVAS", "CARREFOUR", "QUICKMART", "TUSKYS"),
-    "utilities" to listOf("KPLC", "ELECTRICITY", "WATER", "UTILITY", "UTILITIES"),
-    "entertainment" to listOf("CINEMA", "MOVIE", "NETFLIX", "SHOWMAX", "ENTERTAINMENT"),
-    "transport" to listOf("UBER", "BOLT", "TAXI", "MATATU", "TRANSPORT", "BUS"),
-    "medical" to listOf("HOSPITAL", "CLINIC", "PHARMACY", "CHEMIST", "MEDICAL"),
-    "education" to listOf("SCHOOL", "UNIVERSITY", "COLLEGE", "TUITION", "EDUCATION")
-)
-
-private fun matchCategory(counterparty: String, categories: List<Category>): Long {
-    val text = counterparty.uppercase()
-    val iconKey = categoryKeywords.entries
-        .firstOrNull { (_, keywords) -> keywords.any { text.contains(it) } }
-        ?.key
-        ?: "other"
-
-    return categories.firstOrNull { it.iconKey == iconKey }?.id
-        ?: categories.firstOrNull { it.iconKey == "other" }?.id
-        ?: categories.firstOrNull()?.id
-        ?: 0L
 }
