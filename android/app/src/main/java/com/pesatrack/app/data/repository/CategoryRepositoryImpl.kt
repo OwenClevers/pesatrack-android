@@ -4,6 +4,7 @@ import com.pesatrack.app.data.database.dao.CategoryDao
 import com.pesatrack.app.data.database.dao.TransactionDao
 import com.pesatrack.app.data.database.entity.CategoryEntity
 import com.pesatrack.app.data.mapper.toDomain
+import com.pesatrack.app.data.mapper.toEntity
 import com.pesatrack.app.domain.model.Category
 import com.pesatrack.app.domain.model.CategoryDeleteResult
 import com.pesatrack.app.domain.repository.CategoryRepository
@@ -40,5 +41,10 @@ class CategoryRepositoryImpl(
         }
         dao.deleteById(id)
         return CategoryDeleteResult.Deleted
+    }
+
+    override suspend fun replaceAll(categories: List<Category>) {
+        dao.deleteAll()
+        dao.insertAll(categories.map { it.toEntity() })
     }
 }

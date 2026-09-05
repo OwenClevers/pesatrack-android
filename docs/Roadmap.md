@@ -1,5 +1,18 @@
 # Roadmap
 
+## Merge-restore transaction dedup for non-SMS transactions
+
+`BackupManager`'s merge-restore mode dedupes transactions by `smsCode`,
+matching the existing M-Pesa import dedup. A transaction with no
+`smsCode` (manual entries, and anything imported without one in the
+future) has no dedup key, so merging the same backup twice duplicates
+it -- documented, deliberate scope for now, not a bug.
+
+**If this becomes a problem:** fall back to a content hash (amount +
+type + categoryId + transactionDate, maybe merchant) for transactions
+without an `smsCode`, checked the same way `importMpesaTransaction`
+checks the unique index today.
+
 ## Report export
 
 The Reports share icon was removed since nothing backed it.
@@ -8,15 +21,6 @@ The Reports share icon was removed since nothing backed it.
 data already computed in `ReportsViewModel`) written to a file and
 shared via `Intent.ACTION_SEND`, plus the share icon back in
 `ReportsScreen`.
-
-## Backup and restore
-
-Settings row removed in the dead-UI sweep.
-
-**Needs:** an export/import path for the Room database (or a JSON dump
-of `TransactionRepository`/`CategoryRepository`/`BudgetRepository`) to
-a user-chosen location via the Storage Access Framework, since there's
-no backend to sync against.
 
 ## Security lock
 

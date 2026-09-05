@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Backup
 import androidx.compose.material.icons.outlined.Category
 import androidx.compose.material.icons.outlined.CreditCard
 import androidx.compose.material.icons.outlined.DarkMode
@@ -124,6 +125,12 @@ fun SettingsScreen(navController: NavController) {
                         onCheckedChange = darkModeController.setDarkMode
                     )
                 }
+            )
+            HorizontalDivider(color = Divider)
+            SettingsRow(
+                icon = Icons.Outlined.Backup,
+                label = "Backup and restore",
+                onClick = { navController.navigate(Screen.Backup.route) }
             )
             HorizontalDivider(color = Divider)
             SettingsRow(

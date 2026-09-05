@@ -44,4 +44,9 @@ class TransactionRepositoryImpl(
         val rowId = dao.insertIgnoringDuplicates(transaction.toEntity().copy(smsCode = smsCode))
         return rowId != -1L
     }
+
+    override suspend fun replaceAll(transactions: List<Transaction>) {
+        dao.deleteAll()
+        dao.insertAll(transactions.map { it.toEntity() })
+    }
 }

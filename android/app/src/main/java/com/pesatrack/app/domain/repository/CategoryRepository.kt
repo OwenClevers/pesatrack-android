@@ -13,4 +13,8 @@ interface CategoryRepository {
     suspend fun updateCategory(id: Long, name: String, iconKey: String, colorKey: String)
 
     suspend fun deleteCategory(id: Long): CategoryDeleteResult
+
+    // Wipes every category and inserts these in its place, preserving their ids
+    // as-is. Used for a "replace" backup restore.
+    suspend fun replaceAll(categories: List<Category>)
 }

@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.pesatrack.app.presentation.backup.BackupScreen
 import com.pesatrack.app.presentation.budgets.BudgetsScreen
 import com.pesatrack.app.presentation.categories.CategoriesScreen
 import com.pesatrack.app.presentation.dashboard.DashboardScreen
@@ -82,6 +83,10 @@ fun AppNavigation() {
 
         composable(Screen.MpesaImport.route) {
             MpesaImportScreen(navController)
+        }
+
+        composable(Screen.Backup.route) {
+            BackupScreen(navController)
         }
     }
 }
