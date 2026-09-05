@@ -6,11 +6,14 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -214,44 +217,54 @@ fun TransactionsScreen(navController: NavController) {
                     modifier = Modifier.padding(16.dp)
                 )
             } else {
-                Column(
+                // LazyColumn, one item per day group -- a real M-Pesa import
+                // history can run into the thousands of transactions, and a
+                // plain Column composing all of them (and every group) at
+                // once OOMs. A day's worth of transactions is naturally
+                // bounded, so lazily loading at group granularity (rather
+                // than per-row) is enough while keeping each day's card as a
+                // single visual/composable unit, unchanged from before.
+                LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .weight(1f),
+                    contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    uiState.groups.forEach { group ->
-                        Text(
-                            text = group.label,
-                            style = MaterialTheme.typography.titleMedium,
-                            color = TextPrimary
-                        )
+                    items(uiState.groups, key = { it.label }) { group ->
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Text(
+                                text = group.label,
+                                style = MaterialTheme.typography.titleMedium,
+                                color = TextPrimary
+                            )
 
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(containerColor = Surface),
-                            elevation = CardDefaults.cardElevation(0.dp)
-                        ) {
-                            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                                group.transactions.forEachIndexed { index, transaction ->
-                                    if (index > 0) {
-                                        HorizontalDivider(color = Divider)
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(containerColor = Surface),
+                                elevation = CardDefaults.cardElevation(0.dp)
+                            ) {
+                                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                                    group.transactions.forEachIndexed { index, transaction ->
+                                        if (index > 0) {
+                                            HorizontalDivider(color = Divider)
+                                        }
+                                        TransactionRow(
+                                            transaction = transaction,
+                                            category = uiState.categoriesById[transaction.categoryId]
+                                                ?: Category.unknown(transaction.categoryId),
+                                            onClick = {
+                                                if (selectionMode) {
+                                                    viewModel.onToggleSelected(transaction.id)
+                                                } else {
+                                                    navController.navigate(Screen.TransactionDetails.route(transaction.id))
+                                                }
+                                            },
+                                            onLongClick = { viewModel.onToggleSelected(transaction.id) },
+                                            selectionMode = selectionMode,
+                                            selected = transaction.id in uiState.selectedIds
+                                        )
                                     }
-                                    TransactionRow(
-                                        transaction = transaction,
-                                        category = uiState.categoriesById[transaction.categoryId]
-                                            ?: Category.unknown(transaction.categoryId),
-                                        onClick = {
-                                            if (selectionMode) {
-                                                viewModel.onToggleSelected(transaction.id)
-                                            } else {
-                                                navController.navigate(Screen.TransactionDetails.route(transaction.id))
-                                            }
-                                        },
-                                        onLongClick = { viewModel.onToggleSelected(transaction.id) },
-                                        selectionMode = selectionMode,
-                                        selected = transaction.id in uiState.selectedIds
-                                    )
                                 }
                             }
                         }
