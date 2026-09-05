@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.pesatrack.app.core.LocalProfileController
 import com.pesatrack.app.di.AppModule
 import com.pesatrack.app.domain.model.Category
 import com.pesatrack.app.navigation.Screen
@@ -73,8 +74,9 @@ fun DashboardScreen(navController: NavController) {
                     .padding(horizontal = 20.dp, vertical = 16.dp)
             ) {
                 Column {
+                    val profileName = LocalProfileController.current.name
                     Text(
-                        text = "Hello, Owen",
+                        text = if (profileName.isNullOrBlank()) "Hello there" else "Hello, $profileName",
                         style = MaterialTheme.typography.titleLarge,
                         color = Color.White
                     )
