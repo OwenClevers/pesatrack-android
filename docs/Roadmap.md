@@ -9,15 +9,6 @@ data already computed in `ReportsViewModel`) written to a file and
 shared via `Intent.ACTION_SEND`, plus the share icon back in
 `ReportsScreen`.
 
-## Backup and restore
-
-Settings row removed in the dead-UI sweep.
-
-**Needs:** an export/import path for the Room database (or a JSON dump
-of `TransactionRepository`/`CategoryRepository`/`BudgetRepository`) to
-a user-chosen location via the Storage Access Framework, since there's
-no backend to sync against.
-
 ## Security lock
 
 Settings row removed in the dead-UI sweep.
