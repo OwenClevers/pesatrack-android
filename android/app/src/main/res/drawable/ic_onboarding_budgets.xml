@@ -6,15 +6,21 @@
     <path
         android:fillColor="#FFFFFF"
         android:pathData="M17,8 H103 A9,9 0 0 1 112,17 V71 A9,9 0 0 1 103,80 H17 A9,9 0 0 1 8,71 V17 A9,9 0 0 1 17,8 Z" />
+    <!-- Four even 90-degree wedges in the brand palette, purely decorative
+         and not meant to represent real data, so they're kept equal rather
+         than matching arbitrary arc coordinates. -->
     <path
         android:fillColor="#00A859"
-        android:pathData="M42,44 a20,20 0 0 1 20,-20 v20 z" />
-    <path
-        android:fillColor="#FFC107"
-        android:pathData="M62,24 a20,20 0 0 1 17.3,30 L62,44 z" />
+        android:pathData="M62,44 L42,44 A20,20 0 0 1 62,24 Z" />
     <path
         android:fillColor="#00703C"
-        android:pathData="M79.3,54 A20,20 0 1 1 42,44 h20 z" />
+        android:pathData="M62,44 L62,24 A20,20 0 0 1 82,44 Z" />
+    <path
+        android:fillColor="#FFC107"
+        android:pathData="M62,44 L82,44 A20,20 0 0 1 62,64 Z" />
+    <path
+        android:fillColor="#1EB980"
+        android:pathData="M62,44 L62,64 A20,20 0 0 1 42,44 Z" />
     <path
         android:fillColor="#FFFFFF"
         android:pathData="M53,44 A9,9 0 1 0 71,44 A9,9 0 1 0 53,44 Z" />
