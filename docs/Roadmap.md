@@ -1,16 +1,5 @@
 # Roadmap
 
-## Transaction search and filter
-
-Removed from the Transactions screen in the dead-UI sweep since neither
-had anything behind them.
-
-**Needs:** search state and filter criteria (category, type, date range)
-added to `TransactionsUiState`/`TransactionsViewModel`, filtering
-`transactionRepository.getTransactions()` client-side or via a new DAO
-query, plus the search field and a filter sheet back in
-`TransactionsScreen`.
-
 ## Report export
 
 The Reports share icon was removed since nothing backed it.

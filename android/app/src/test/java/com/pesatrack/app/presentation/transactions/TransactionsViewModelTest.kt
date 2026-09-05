@@ -6,6 +6,7 @@ import com.pesatrack.app.domain.model.TransactionSource
 import com.pesatrack.app.domain.model.TransactionType
 import com.pesatrack.app.fake.FakeCategoryRepository
 import com.pesatrack.app.fake.FakeTransactionRepository
+import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -17,6 +18,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -24,6 +26,7 @@ import org.junit.Test
 class TransactionsViewModelTest {
 
     private val food = Category(id = 1, name = "Food", iconKey = "food", colorKey = "food")
+    private val transport = Category(id = 2, name = "Transport", iconKey = "transport", colorKey = "transport")
 
     @Before
     fun setUp() {
@@ -69,17 +72,182 @@ class TransactionsViewModelTest {
         job.cancel()
     }
 
+    @Test
+    fun `search matches merchant case-insensitively`() = runTest {
+        val transactions = listOf(
+            tx(1, 500.0, merchant = "Naivas Supermarket"),
+            tx(2, 300.0, merchant = "Java House")
+        )
+        val viewModel = TransactionsViewModel(
+            FakeTransactionRepository(transactions),
+            FakeCategoryRepository(listOf(food))
+        )
+        val job = launch { viewModel.uiState.collect { } }
+        advanceUntilIdle()
+
+        viewModel.onSearchQueryChange("naivas")
+        advanceUntilIdle()
+
+        val results = viewModel.uiState.value.groups.flatMap { it.transactions }
+        assertEquals(listOf(1L), results.map { it.id })
+
+        job.cancel()
+    }
+
+    @Test
+    fun `search matches description case-insensitively`() = runTest {
+        val transactions = listOf(
+            tx(1, 500.0, merchant = "Shop", description = "Weekly Groceries"),
+            tx(2, 300.0, merchant = "Shop", description = "Electronics")
+        )
+        val viewModel = TransactionsViewModel(
+            FakeTransactionRepository(transactions),
+            FakeCategoryRepository(listOf(food))
+        )
+        val job = launch { viewModel.uiState.collect { } }
+        advanceUntilIdle()
+
+        viewModel.onSearchQueryChange("groceries")
+        advanceUntilIdle()
+
+        val results = viewModel.uiState.value.groups.flatMap { it.transactions }
+        assertEquals(listOf(1L), results.map { it.id })
+
+        job.cancel()
+    }
+
+    @Test
+    fun `search with no matches shows empty groups`() = runTest {
+        val transactions = listOf(tx(1, 500.0, merchant = "Naivas Supermarket"))
+        val viewModel = TransactionsViewModel(
+            FakeTransactionRepository(transactions),
+            FakeCategoryRepository(listOf(food))
+        )
+        val job = launch { viewModel.uiState.collect { } }
+        advanceUntilIdle()
+
+        viewModel.onSearchQueryChange("nonexistent")
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value.groups.isEmpty())
+
+        job.cancel()
+    }
+
+    @Test
+    fun `filter by type keeps only expenses or only income`() = runTest {
+        val transactions = listOf(
+            tx(1, 500.0, type = TransactionType.EXPENSE),
+            tx(2, 1000.0, type = TransactionType.INCOME)
+        )
+        val viewModel = TransactionsViewModel(
+            FakeTransactionRepository(transactions),
+            FakeCategoryRepository(listOf(food))
+        )
+        val job = launch { viewModel.uiState.collect { } }
+        advanceUntilIdle()
+
+        viewModel.onFilterChange(TransactionFilter(type = TransactionType.INCOME))
+        advanceUntilIdle()
+
+        val results = viewModel.uiState.value.groups.flatMap { it.transactions }
+        assertEquals(listOf(2L), results.map { it.id })
+
+        job.cancel()
+    }
+
+    @Test
+    fun `filter by category keeps only matching category`() = runTest {
+        val transactions = listOf(
+            tx(1, 500.0, categoryId = food.id),
+            tx(2, 300.0, categoryId = transport.id)
+        )
+        val viewModel = TransactionsViewModel(
+            FakeTransactionRepository(transactions),
+            FakeCategoryRepository(listOf(food, transport))
+        )
+        val job = launch { viewModel.uiState.collect { } }
+        advanceUntilIdle()
+
+        viewModel.onFilterChange(TransactionFilter(categoryId = transport.id))
+        advanceUntilIdle()
+
+        val results = viewModel.uiState.value.groups.flatMap { it.transactions }
+        assertEquals(listOf(2L), results.map { it.id })
+
+        job.cancel()
+    }
+
+    @Test
+    fun `filter by date range excludes transactions outside the range`() = runTest {
+        val transactions = listOf(
+            tx(1, 100.0, date = LocalDateTime.of(2026, 3, 1, 9, 0)),
+            tx(2, 200.0, date = LocalDateTime.of(2026, 3, 10, 9, 0)),
+            tx(3, 300.0, date = LocalDateTime.of(2026, 3, 20, 9, 0))
+        )
+        val viewModel = TransactionsViewModel(
+            FakeTransactionRepository(transactions),
+            FakeCategoryRepository(listOf(food))
+        )
+        val job = launch { viewModel.uiState.collect { } }
+        advanceUntilIdle()
+
+        viewModel.onFilterChange(
+            TransactionFilter(
+                startDate = LocalDate.of(2026, 3, 5),
+                endDate = LocalDate.of(2026, 3, 15)
+            )
+        )
+        advanceUntilIdle()
+
+        val results = viewModel.uiState.value.groups.flatMap { it.transactions }
+        assertEquals(listOf(2L), results.map { it.id })
+
+        job.cancel()
+    }
+
+    @Test
+    fun `search and filter combine so both criteria must match`() = runTest {
+        val transactions = listOf(
+            // Matches search but not the type filter.
+            tx(1, 500.0, merchant = "Naivas Supermarket", type = TransactionType.INCOME, categoryId = food.id),
+            // Matches both.
+            tx(2, 300.0, merchant = "Naivas Express", type = TransactionType.EXPENSE, categoryId = food.id),
+            // Matches the type filter but not search.
+            tx(3, 200.0, merchant = "Java House", type = TransactionType.EXPENSE, categoryId = food.id)
+        )
+        val viewModel = TransactionsViewModel(
+            FakeTransactionRepository(transactions),
+            FakeCategoryRepository(listOf(food))
+        )
+        val job = launch { viewModel.uiState.collect { } }
+        advanceUntilIdle()
+
+        viewModel.onSearchQueryChange("naivas")
+        viewModel.onFilterChange(TransactionFilter(type = TransactionType.EXPENSE))
+        advanceUntilIdle()
+
+        val results = viewModel.uiState.value.groups.flatMap { it.transactions }
+        assertEquals(listOf(2L), results.map { it.id })
+
+        job.cancel()
+    }
+
     private fun tx(
         id: Long,
         amount: Double,
-        date: LocalDateTime
+        type: TransactionType = TransactionType.EXPENSE,
+        categoryId: Long = food.id,
+        merchant: String? = null,
+        description: String? = null,
+        date: LocalDateTime = LocalDateTime.of(2026, 1, 31, 9, 0)
     ) = Transaction(
         id = id,
         amount = amount,
-        type = TransactionType.EXPENSE,
-        categoryId = food.id,
-        merchant = null,
-        description = null,
+        type = type,
+        categoryId = categoryId,
+        merchant = merchant,
+        description = description,
         transactionDate = date,
         source = TransactionSource.MANUAL
     )
