@@ -20,6 +20,7 @@ import androidx.compose.material.icons.outlined.CreditCard
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.automirrored.outlined.Message
 import androidx.compose.material3.AlertDialog
@@ -42,17 +43,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.pesatrack.app.core.LocalProfileController
+import com.pesatrack.app.core.LockTimeout
+import com.pesatrack.app.core.SecurityPreferences
+import com.pesatrack.app.data.security.AuthResult
+import com.pesatrack.app.data.security.BiometricAuthenticator
+import com.pesatrack.app.data.security.findFragmentActivity
 import com.pesatrack.app.navigation.Screen
+import kotlinx.coroutines.launch
 import com.pesatrack.app.ui.theme.Background
 import com.pesatrack.app.ui.theme.Divider
 import com.pesatrack.app.ui.theme.FuelContainer
@@ -76,6 +85,16 @@ fun SettingsScreen(navController: NavController) {
     var showProfileEdit by remember { mutableStateOf(false) }
     val darkModeController = LocalDarkModeController.current
     val profileController = LocalProfileController.current
+
+    val context = LocalContext.current
+    val activity = remember(context) { context.findFragmentActivity() }
+    val authenticator = remember(activity) { activity?.let(::BiometricAuthenticator) }
+    val scope = rememberCoroutineScope()
+
+    var lockEnabled by remember { mutableStateOf(SecurityPreferences.isLockEnabled(context)) }
+    var lockTimeout by remember { mutableStateOf(SecurityPreferences.getLockTimeout(context)) }
+    var showNoDeviceSecurityDialog by remember { mutableStateOf(false) }
+    var showLockTimeoutSheet by remember { mutableStateOf(false) }
 
     StatusBarIcons(darkIcons = false)
 
@@ -128,6 +147,51 @@ fun SettingsScreen(navController: NavController) {
             )
             HorizontalDivider(color = Divider)
             SettingsRow(
+                icon = Icons.Outlined.Lock,
+                label = "App lock",
+                trailing = {
+                    Switch(
+                        checked = lockEnabled,
+                        onCheckedChange = { checked ->
+                            if (checked) {
+                                if (authenticator?.isAvailable() == true) {
+                                    lockEnabled = true
+                                    SecurityPreferences.setLockEnabled(context, true)
+                                } else {
+                                    showNoDeviceSecurityDialog = true
+                                }
+                            } else {
+                                val bio = authenticator
+                                if (bio == null) {
+                                    lockEnabled = false
+                                    SecurityPreferences.setLockEnabled(context, false)
+                                    return@Switch
+                                }
+                                scope.launch {
+                                    val result = bio.authenticate(
+                                        title = "Confirm to turn off App lock"
+                                    )
+                                    if (result == AuthResult.SUCCESS) {
+                                        lockEnabled = false
+                                        SecurityPreferences.setLockEnabled(context, false)
+                                    }
+                                }
+                            }
+                        }
+                    )
+                }
+            )
+            if (lockEnabled) {
+                HorizontalDivider(color = Divider)
+                SettingsRow(
+                    icon = Icons.Outlined.Lock,
+                    label = "Lock after",
+                    trailingText = lockTimeout.label,
+                    onClick = { showLockTimeoutSheet = true }
+                )
+            }
+            HorizontalDivider(color = Divider)
+            SettingsRow(
                 icon = Icons.Outlined.Backup,
                 label = "Backup and restore",
                 onClick = { navController.navigate(Screen.Backup.route) }
@@ -146,6 +210,37 @@ fun SettingsScreen(navController: NavController) {
                 onClick = { showAbout = true }
             )
         }
+    }
+
+    if (showNoDeviceSecurityDialog) {
+        AlertDialog(
+            onDismissRequest = { showNoDeviceSecurityDialog = false },
+            title = { Text("No device security set up") },
+            text = {
+                Text(
+                    "App lock needs a screen lock -- a PIN, pattern, password, or " +
+                        "biometric -- set up on this device first. Set one up in your " +
+                        "device settings, then try again."
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { showNoDeviceSecurityDialog = false }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+
+    if (showLockTimeoutSheet) {
+        LockTimeoutSheet(
+            current = lockTimeout,
+            onDismiss = { showLockTimeoutSheet = false },
+            onSelect = { timeout ->
+                lockTimeout = timeout
+                SecurityPreferences.setLockTimeout(context, timeout)
+                showLockTimeoutSheet = false
+            }
+        )
     }
 
     if (showAbout) {
@@ -211,6 +306,55 @@ fun SettingsScreen(navController: NavController) {
                     colors = ButtonDefaults.buttonColors(containerColor = Primary)
                 ) {
                     Text("Save")
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LockTimeoutSheet(
+    current: LockTimeout,
+    onDismiss: () -> Unit,
+    onSelect: (LockTimeout) -> Unit
+) {
+    val sheetState = rememberModalBottomSheetState()
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = Surface
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 8.dp)
+                .padding(bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = "Lock after",
+                style = MaterialTheme.typography.titleMedium,
+                color = TextPrimary,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
+            LockTimeout.entries.forEach { timeout ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .clickable { onSelect(timeout) }
+                        .padding(vertical = 12.dp, horizontal = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = timeout.label,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = if (timeout == current) Primary else TextPrimary
+                    )
                 }
             }
         }

@@ -24,6 +24,7 @@ import androidx.navigation.NavController
 import com.pesatrack.app.R
 import com.pesatrack.app.core.Constants
 import com.pesatrack.app.core.OnboardingPreferences
+import com.pesatrack.app.core.SecurityPreferences
 import com.pesatrack.app.navigation.Screen
 import com.pesatrack.app.ui.theme.Accent
 import com.pesatrack.app.ui.theme.PrimaryDark
@@ -40,10 +41,10 @@ fun SplashScreen(
 
     LaunchedEffect(Unit) {
         delay(Constants.SPLASH_DELAY)
-        val destination = if (OnboardingPreferences.hasSeenOnboarding(context)) {
-            Screen.Dashboard.route
-        } else {
-            Screen.Onboarding.route
+        val destination = when {
+            !OnboardingPreferences.hasSeenOnboarding(context) -> Screen.Onboarding.route
+            SecurityPreferences.isLockEnabled(context) -> Screen.Lock.route
+            else -> Screen.Dashboard.route
         }
         navController.navigate(destination) {
             popUpTo(Screen.Splash.route) {
