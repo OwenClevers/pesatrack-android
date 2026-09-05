@@ -70,6 +70,14 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.biometric)
+    // Overrides the ancient androidx.fragment:1.2.5 that biometric:1.1.0 pulls
+    // in transitively -- that version predates the fix making
+    // ActivityResultRegistry's generated request codes safe for
+    // FragmentActivity's 16-bit requestCode check, which crashed any
+    // rememberLauncherForActivityResult call ("Can only use lower 16 bits for
+    // requestCode") once MainActivity became a FragmentActivity for
+    // BiometricPrompt.
+    implementation(libs.androidx.fragment)
     ksp(libs.androidx.room.compiler)
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

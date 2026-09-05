@@ -76,8 +76,16 @@ fun AddTransactionScreen(navController: NavController, transactionId: Long? = nu
     val repository = remember { AppModule.provideTransactionRepository(context) }
     val categoryRepository = remember { AppModule.provideCategoryRepository(context) }
     val merchantCategoryRepository = remember { AppModule.provideMerchantCategoryRepository(context) }
+    val budgetAlertChecker = remember { AppModule.provideBudgetAlertChecker(context) }
     val viewModel: AddTransactionViewModel = viewModel(
-        factory = AddTransactionViewModel.Factory(repository, categoryRepository, merchantCategoryRepository, transactionId)
+        factory = AddTransactionViewModel.Factory(
+            repository,
+            categoryRepository,
+            merchantCategoryRepository,
+            budgetAlertChecker,
+            context,
+            transactionId
+        )
     )
     val uiState by viewModel.uiState.collectAsState()
 

@@ -3,12 +3,17 @@ package com.pesatrack.app.di
 import android.content.Context
 import androidx.room.Room
 import com.pesatrack.app.data.backup.BackupManager
+import com.pesatrack.app.data.budget.AndroidBudgetAlertNotifier
+import com.pesatrack.app.data.budget.BudgetAlertChecker
+import com.pesatrack.app.data.budget.BudgetAlertNotifier
 import com.pesatrack.app.data.database.AppDatabase
 import com.pesatrack.app.data.database.MIGRATION_1_2
 import com.pesatrack.app.data.database.MIGRATION_2_3
 import com.pesatrack.app.data.database.MIGRATION_3_4
 import com.pesatrack.app.data.database.MIGRATION_4_5
+import com.pesatrack.app.data.database.MIGRATION_5_6
 import com.pesatrack.app.data.database.categorySeedCallback
+import com.pesatrack.app.data.repository.BudgetAlertRepositoryImpl
 import com.pesatrack.app.data.repository.BudgetRepositoryImpl
 import com.pesatrack.app.data.repository.MerchantCategoryRepositoryImpl
 import com.pesatrack.app.data.sms.MerchantCategorizer
@@ -17,6 +22,7 @@ import com.pesatrack.app.data.sms.SmsParser
 import com.pesatrack.app.data.sms.SmsReader
 import com.pesatrack.app.data.repository.CategoryRepositoryImpl
 import com.pesatrack.app.data.repository.TransactionRepositoryImpl
+import com.pesatrack.app.domain.repository.BudgetAlertRepository
 import com.pesatrack.app.domain.repository.BudgetRepository
 import com.pesatrack.app.domain.repository.CategoryRepository
 import com.pesatrack.app.domain.repository.MerchantCategoryRepository
@@ -41,6 +47,9 @@ object AppModule {
     @Volatile
     private var merchantCategoryRepository: MerchantCategoryRepository? = null
 
+    @Volatile
+    private var budgetAlertRepository: BudgetAlertRepository? = null
+
     fun provideDatabase(context: Context): AppDatabase =
         database ?: synchronized(this) {
             database ?: Room.databaseBuilder(
@@ -48,7 +57,7 @@ object AppModule {
                 AppDatabase::class.java,
                 DATABASE_NAME
             )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
                 .addCallback(categorySeedCallback)
                 .build()
                 .also { database = it }
@@ -87,6 +96,27 @@ object AppModule {
     // own beyond the repository above.
     fun provideMerchantCategorizer(context: Context): MerchantCategorizer =
         MerchantCategorizer(provideMerchantCategoryRepository(context))
+
+    fun provideBudgetAlertRepository(context: Context): BudgetAlertRepository =
+        budgetAlertRepository ?: synchronized(this) {
+            budgetAlertRepository ?: BudgetAlertRepositoryImpl(
+                provideDatabase(context).budgetAlertDao()
+            ).also { budgetAlertRepository = it }
+        }
+
+    // Not cached as a singleton -- cheap to build, only used from the write
+    // call sites (add/edit transaction, M-Pesa import) right after a save.
+    fun provideBudgetAlertChecker(context: Context): BudgetAlertChecker =
+        BudgetAlertChecker(
+            provideBudgetRepository(context),
+            provideTransactionRepository(context),
+            provideCategoryRepository(context),
+            provideBudgetAlertRepository(context),
+            provideBudgetAlertNotifier(context)
+        )
+
+    fun provideBudgetAlertNotifier(context: Context): BudgetAlertNotifier =
+        AndroidBudgetAlertNotifier(context.applicationContext)
 
     fun provideSmsReader(context: Context): SmsReader =
         SmsReader(context.applicationContext)

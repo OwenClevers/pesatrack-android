@@ -70,6 +70,8 @@ The Gradle/AGP/compileSdk versions in `android/gradle/libs.versions.toml` and `a
 
 All Kotlin-related plugin entries in `libs.versions.toml` must use `version.ref = "kotlin"`, never a hardcoded literal — a hardcoded `2.4.0` on `kotlin-android` silently forced every Kotlin artifact (including the compose compiler plugin) up to 2.4.0 too and broke KSP compatibility (`ksp-2.1.21-2.0.1 is too old for kotlin-2.4.0`).
 
+`androidx.fragment` is pinned to `1.8.5` (see `androidx-fragment` in `libs.versions.toml`) because `androidx.biometric:1.1.0` pulls in `androidx.fragment:1.2.5` transitively — old enough to predate the fix that makes `ActivityResultRegistry`'s generated request codes safe for `FragmentActivity`'s 16-bit `requestCode` check. Without the pin, any `rememberLauncherForActivityResult` call (export, backup/restore, etc.) crashes with `IllegalArgumentException: Can only use lower 16 bits for requestCode` the moment it's launched, since `MainActivity` is a `FragmentActivity` (required for `BiometricPrompt`). Don't remove this pin without re-verifying every activity-result launcher in the app still works.
+
 ### Compose Material3
 
 The project is on Compose Material3 `1.4.0` (via `composeBom = "2026.02.01"`). Two API gotchas hit while building the Add Transaction screen's category dropdown:

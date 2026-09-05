@@ -53,7 +53,10 @@ fun AppNavigation() {
                         SecurityPreferences.isLockEnabled(context) &&
                         AppLockState.shouldRelock(SecurityPreferences.getLockTimeout(context))
                     ) {
-                        navController.navigate(Screen.Lock.route)
+                        // Pushed on top of (not replacing) the current screen, so
+                        // LockScreen.unlock() pops back to it directly -- "next"
+                        // is never consulted for this call, only on a cold start.
+                        navController.navigate(Screen.Lock.route())
                     }
                 }
                 else -> {}
@@ -72,8 +75,12 @@ fun AppNavigation() {
             SplashScreen(navController)
         }
 
-        composable(Screen.Lock.route) {
-            LockScreen(navController)
+        composable(
+            route = Screen.Lock.route,
+            arguments = listOf(navArgument("next") { defaultValue = Screen.Dashboard.route })
+        ) { backStackEntry ->
+            val next = backStackEntry.arguments?.getString("next") ?: Screen.Dashboard.route
+            LockScreen(navController, next)
         }
 
         composable(Screen.Onboarding.route) {

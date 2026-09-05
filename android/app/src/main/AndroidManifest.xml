@@ -9,6 +9,10 @@
         android:name="android.hardware.telephony"
         android:required="false" />
 
+    <!-- Optional: powers budget alert notifications. The app is fully usable
+         without it; alerts just don't show if this is denied. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"

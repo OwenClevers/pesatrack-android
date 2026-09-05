@@ -43,7 +43,7 @@ import com.pesatrack.app.ui.theme.StatusBarIcons
 import kotlinx.coroutines.launch
 
 @Composable
-fun LockScreen(navController: NavController) {
+fun LockScreen(navController: NavController, next: String = Screen.Dashboard.route) {
     val context = LocalContext.current
     val activity = remember(context) { context.findFragmentActivity() }
     val authenticator = remember(activity) { activity?.let(::BiometricAuthenticator) }
@@ -62,7 +62,7 @@ fun LockScreen(navController: NavController) {
         if (destination != null) {
             navController.popBackStack()
         } else {
-            navController.navigate(Screen.Dashboard.route) {
+            navController.navigate(next) {
                 popUpTo(Screen.Lock.route) { inclusive = true }
             }
         }

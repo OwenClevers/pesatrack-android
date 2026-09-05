@@ -9,6 +9,8 @@ data class ReportsUiState(
     val categorySlices: List<CategorySlice> = emptyList(),
     val dailyTrend: List<DailyPoint> = emptyList(),
     val trendMax: Double = 0.0,
+    val isExporting: Boolean = false,
+    val exportMessage: String? = null,
     val isLoading: Boolean = true
 )
 

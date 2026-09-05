@@ -6,10 +6,12 @@ import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.pesatrack.app.data.database.converters.Converters
+import com.pesatrack.app.data.database.dao.BudgetAlertDao
 import com.pesatrack.app.data.database.dao.BudgetDao
 import com.pesatrack.app.data.database.dao.CategoryDao
 import com.pesatrack.app.data.database.dao.MerchantCategoryDao
 import com.pesatrack.app.data.database.dao.TransactionDao
+import com.pesatrack.app.data.database.entity.BudgetAlertEntity
 import com.pesatrack.app.data.database.entity.BudgetEntity
 import com.pesatrack.app.data.database.entity.CategoryEntity
 import com.pesatrack.app.data.database.entity.MerchantCategoryEntity
@@ -20,9 +22,10 @@ import com.pesatrack.app.data.database.entity.TransactionEntity
         TransactionEntity::class,
         CategoryEntity::class,
         BudgetEntity::class,
-        MerchantCategoryEntity::class
+        MerchantCategoryEntity::class,
+        BudgetAlertEntity::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -35,6 +38,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun budgetDao(): BudgetDao
 
     abstract fun merchantCategoryDao(): MerchantCategoryDao
+
+    abstract fun budgetAlertDao(): BudgetAlertDao
 }
 
 val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -107,6 +112,27 @@ val MIGRATION_4_5 = object : Migration(4, 5) {
                 `categoryId` INTEGER NOT NULL,
                 PRIMARY KEY(`merchantKey`)
             )
+            """.trimIndent()
+        )
+    }
+}
+
+val MIGRATION_5_6 = object : Migration(5, 6) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS `budget_alerts` (
+                `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                `categoryId` INTEGER NOT NULL,
+                `month` TEXT NOT NULL,
+                `threshold` TEXT NOT NULL
+            )
+            """.trimIndent()
+        )
+        db.execSQL(
+            """
+            CREATE UNIQUE INDEX IF NOT EXISTS `index_budget_alerts_categoryId_month_threshold`
+            ON `budget_alerts` (`categoryId`, `month`, `threshold`)
             """.trimIndent()
         )
     }
