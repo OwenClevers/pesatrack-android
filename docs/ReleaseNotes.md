@@ -1,5 +1,31 @@
 # Release notes
 
+## PesaTrack v0.4.1
+
+`develop` merged into `main` at this commit. Visual polish, no behavior
+changes.
+
+### Onboarding donut illustration
+The third onboarding page's donut illustration had uneven wedges: one
+path used `large-arc-flag=1` on a 30°→180° span, producing a ~210° wedge
+(roughly 58% of the circle) instead of its intended remaining share, so
+it read as lopsided real data rather than decoration. Redrawn as four
+even 90° segments in the brand palette (primary, primary dark, accent,
+secondary), keeping the same white centre hole, size, and position.
+
+### Splash screen wordmark
+Replaced the placeholder white tile with a bold "P" glyph with the
+actual mark from `docs/pesatrack-design-spec.html`: a stroked "P" (no
+fill, round caps/joins) and three ascending bars in green/green/accent
+yellow, as a new `ic_splash_mark.xml` vector drawable.
+
+### App icon
+Replaced the default Android Studio template launcher icon (green grid
+background, robot silhouette) with the same mark: a solid brand-green
+background layer and a foreground layer with the "P" and bars in
+white/accent-yellow, positioned within the adaptive-icon safe zone so it
+survives any OEM icon mask.
+
 ## PesaTrack v0.4.0
 
 `develop` merged into `main` at this commit. A completeness audit against
