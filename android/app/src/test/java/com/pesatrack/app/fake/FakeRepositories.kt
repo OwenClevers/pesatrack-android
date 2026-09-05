@@ -1,9 +1,11 @@
 package com.pesatrack.app.fake
 
 import com.pesatrack.app.domain.model.Budget
+import com.pesatrack.app.domain.model.BudgetThreshold
 import com.pesatrack.app.domain.model.Category
 import com.pesatrack.app.domain.model.CategoryDeleteResult
 import com.pesatrack.app.domain.model.Transaction
+import com.pesatrack.app.domain.repository.BudgetAlertRepository
 import com.pesatrack.app.domain.repository.BudgetRepository
 import com.pesatrack.app.domain.repository.CategoryRepository
 import com.pesatrack.app.domain.repository.MerchantCategoryRepository
@@ -138,5 +140,18 @@ class FakeMerchantCategoryRepository(
     override suspend fun learn(merchantName: String, categoryId: Long) {
         val key = normalize(merchantName) ?: return
         mappings[key] = categoryId
+    }
+}
+
+/** In-memory [BudgetAlertRepository] fake for BudgetAlertChecker unit tests. */
+class FakeBudgetAlertRepository : BudgetAlertRepository {
+
+    private val fired = mutableSetOf<Triple<Long, YearMonth, BudgetThreshold>>()
+
+    override suspend fun hasFired(categoryId: Long, month: YearMonth, threshold: BudgetThreshold): Boolean =
+        Triple(categoryId, month, threshold) in fired
+
+    override suspend fun markFired(categoryId: Long, month: YearMonth, threshold: BudgetThreshold) {
+        fired += Triple(categoryId, month, threshold)
     }
 }

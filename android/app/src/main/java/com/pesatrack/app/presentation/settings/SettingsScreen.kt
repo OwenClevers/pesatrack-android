@@ -1,5 +1,10 @@
 package com.pesatrack.app.presentation.settings
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +26,7 @@ import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.automirrored.outlined.Message
 import androidx.compose.material3.AlertDialog
@@ -40,6 +46,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,13 +60,16 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
+import com.pesatrack.app.core.BudgetAlertPreferences
 import com.pesatrack.app.core.LocalProfileController
 import com.pesatrack.app.core.LockTimeout
 import com.pesatrack.app.core.SecurityPreferences
 import com.pesatrack.app.data.security.AuthResult
 import com.pesatrack.app.data.security.BiometricAuthenticator
 import com.pesatrack.app.data.security.findFragmentActivity
+import com.pesatrack.app.domain.model.BudgetThreshold
 import com.pesatrack.app.navigation.Screen
 import kotlinx.coroutines.launch
 import com.pesatrack.app.ui.theme.Background
@@ -95,6 +105,35 @@ fun SettingsScreen(navController: NavController) {
     var lockTimeout by remember { mutableStateOf(SecurityPreferences.getLockTimeout(context)) }
     var showNoDeviceSecurityDialog by remember { mutableStateOf(false) }
     var showLockTimeoutSheet by remember { mutableStateOf(false) }
+
+    var budgetAlertsEnabled by remember { mutableStateOf(BudgetAlertPreferences.isEnabled(context)) }
+    var warningEnabled by remember {
+        mutableStateOf(BudgetAlertPreferences.isThresholdEnabled(context, BudgetThreshold.WARNING))
+    }
+    var exceededEnabled by remember {
+        mutableStateOf(BudgetAlertPreferences.isThresholdEnabled(context, BudgetThreshold.EXCEEDED))
+    }
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { /* Denying just means alerts won't show -- the toggle itself stays on. */ }
+
+    // Budget alerts default to enabled, so most users never touch the toggle
+    // themselves -- request the permission proactively on entry (once per
+    // visit) rather than only reactively inside the toggle's onCheckedChange,
+    // or it would never actually get requested for anyone who doesn't
+    // explicitly flip it off and back on. The system itself suppresses
+    // repeated prompts after a denial, so this doesn't nag.
+    LaunchedEffect(Unit) {
+        if (budgetAlertsEnabled &&
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
 
     StatusBarIcons(darkIcons = false)
 
@@ -188,6 +227,59 @@ fun SettingsScreen(navController: NavController) {
                     label = "Lock after",
                     trailingText = lockTimeout.label,
                     onClick = { showLockTimeoutSheet = true }
+                )
+            }
+            HorizontalDivider(color = Divider)
+            SettingsRow(
+                icon = Icons.Outlined.Notifications,
+                label = "Budget alerts",
+                trailing = {
+                    Switch(
+                        checked = budgetAlertsEnabled,
+                        onCheckedChange = { checked ->
+                            budgetAlertsEnabled = checked
+                            BudgetAlertPreferences.setEnabled(context, checked)
+                            if (checked &&
+                                Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                                ContextCompat.checkSelfPermission(
+                                    context,
+                                    Manifest.permission.POST_NOTIFICATIONS
+                                ) != PackageManager.PERMISSION_GRANTED
+                            ) {
+                                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            }
+                        }
+                    )
+                }
+            )
+            if (budgetAlertsEnabled) {
+                HorizontalDivider(color = Divider)
+                SettingsRow(
+                    icon = Icons.Outlined.Notifications,
+                    label = BudgetThreshold.WARNING.label,
+                    trailing = {
+                        Switch(
+                            checked = warningEnabled,
+                            onCheckedChange = { checked ->
+                                warningEnabled = checked
+                                BudgetAlertPreferences.setThresholdEnabled(context, BudgetThreshold.WARNING, checked)
+                            }
+                        )
+                    }
+                )
+                HorizontalDivider(color = Divider)
+                SettingsRow(
+                    icon = Icons.Outlined.Notifications,
+                    label = BudgetThreshold.EXCEEDED.label,
+                    trailing = {
+                        Switch(
+                            checked = exceededEnabled,
+                            onCheckedChange = { checked ->
+                                exceededEnabled = checked
+                                BudgetAlertPreferences.setThresholdEnabled(context, BudgetThreshold.EXCEEDED, checked)
+                            }
+                        )
+                    }
                 )
             }
             HorizontalDivider(color = Divider)

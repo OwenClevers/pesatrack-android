@@ -25,6 +25,7 @@ import com.pesatrack.app.R
 import com.pesatrack.app.core.Constants
 import com.pesatrack.app.core.OnboardingPreferences
 import com.pesatrack.app.core.SecurityPreferences
+import com.pesatrack.app.data.security.findFragmentActivity
 import com.pesatrack.app.navigation.Screen
 import com.pesatrack.app.ui.theme.Accent
 import com.pesatrack.app.ui.theme.PrimaryDark
@@ -41,10 +42,18 @@ fun SplashScreen(
 
     LaunchedEffect(Unit) {
         delay(Constants.SPLASH_DELAY)
+        // A notification tap sets this extra on the Intent that (re)started
+        // MainActivity, wanting Budgets instead of the usual Dashboard once
+        // onboarding/lock gating is satisfied.
+        val pendingTarget = context.findFragmentActivity()?.intent
+            ?.getStringExtra(Constants.EXTRA_NAVIGATE_TO)
+            ?.let { if (it == Constants.NAVIGATE_TARGET_BUDGETS) Screen.Budgets.route else null }
+            ?: Screen.Dashboard.route
+
         val destination = when {
             !OnboardingPreferences.hasSeenOnboarding(context) -> Screen.Onboarding.route
-            SecurityPreferences.isLockEnabled(context) -> Screen.Lock.route
-            else -> Screen.Dashboard.route
+            SecurityPreferences.isLockEnabled(context) -> Screen.Lock.route(pendingTarget)
+            else -> pendingTarget
         }
         navController.navigate(destination) {
             popUpTo(Screen.Splash.route) {
