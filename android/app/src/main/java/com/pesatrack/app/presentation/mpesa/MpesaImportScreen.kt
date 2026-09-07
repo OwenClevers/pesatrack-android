@@ -77,20 +77,9 @@ fun MpesaImportScreen(navController: NavController) {
     val context = LocalContext.current
     val smsReader = remember { AppModule.provideSmsReader(context) }
     val smsParsers = remember { AppModule.provideSmsParsers() }
-    val transactionRepository = remember { AppModule.provideTransactionRepository(context) }
-    val categoryRepository = remember { AppModule.provideCategoryRepository(context) }
-    val merchantCategorizer = remember { AppModule.provideMerchantCategorizer(context) }
-    val budgetAlertChecker = remember { AppModule.provideBudgetAlertChecker(context) }
+    val importer = remember { AppModule.provideSmsTransactionImporter(context) }
     val viewModel: MpesaImportViewModel = viewModel(
-        factory = MpesaImportViewModel.Factory(
-            smsReader,
-            smsParsers,
-            transactionRepository,
-            categoryRepository,
-            merchantCategorizer,
-            budgetAlertChecker,
-            context
-        )
+        factory = MpesaImportViewModel.Factory(smsReader, smsParsers, importer)
     )
     val uiState by viewModel.uiState.collectAsState()
 
@@ -98,10 +87,15 @@ fun MpesaImportScreen(navController: NavController) {
 
     StatusBarIcons(darkIcons = false)
 
+    // Requests READ_SMS (bulk import) and RECEIVE_SMS (live auto-import via
+    // MpesaSmsReceiver) together -- same "SMS" permission group, so the
+    // system shows one combined dialog. permissionGranted below only gates on
+    // READ_SMS since that's what the bulk-scan UI on this screen needs; a
+    // RECEIVE_SMS denial just means new transactions won't auto-import.
     val permissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        viewModel.onPermissionResult(granted)
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { results ->
+        viewModel.onPermissionResult(results[Manifest.permission.READ_SMS] == true)
     }
 
     LaunchedEffect(Unit) {
@@ -148,7 +142,11 @@ fun MpesaImportScreen(navController: NavController) {
             if (!uiState.permissionGranted) {
                 PermissionRationaleCard(
                     denied = uiState.permissionDenied,
-                    onRequestPermission = { permissionLauncher.launch(Manifest.permission.READ_SMS) }
+                    onRequestPermission = {
+                        permissionLauncher.launch(
+                            arrayOf(Manifest.permission.READ_SMS, Manifest.permission.RECEIVE_SMS)
+                        )
+                    }
                 )
             } else {
                 FoundMessagesCard(count = uiState.foundCount)
@@ -168,6 +166,14 @@ fun MpesaImportScreen(navController: NavController) {
                         label = "Failed to parse",
                         value = uiState.failedCount,
                         modifier = Modifier.weight(1f)
+                    )
+                }
+
+                if (uiState.isComplete) {
+                    Text(
+                        text = "New M-Pesa messages will now be imported automatically.",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = TextSecondary
                     )
                 }
             }
@@ -194,7 +200,8 @@ fun MpesaImportScreen(navController: NavController) {
             text = {
                 Text(
                     "PesaTrack reads M-Pesa confirmation messages on this device to " +
-                        "automatically import and categorise your transactions. This is " +
+                        "automatically import and categorise your transactions — both this " +
+                        "one-time scan and every new confirmation SMS from then on. This is " +
                         "optional — the app works fully without it, and you can always " +
                         "add transactions manually instead."
                 )

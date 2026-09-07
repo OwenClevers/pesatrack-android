@@ -20,6 +20,7 @@ import com.pesatrack.app.data.sms.MerchantCategorizer
 import com.pesatrack.app.data.sms.MpesaSmsParser
 import com.pesatrack.app.data.sms.SmsParser
 import com.pesatrack.app.data.sms.SmsReader
+import com.pesatrack.app.data.sms.SmsTransactionImporter
 import com.pesatrack.app.data.repository.CategoryRepositoryImpl
 import com.pesatrack.app.data.repository.TransactionRepositoryImpl
 import com.pesatrack.app.domain.repository.BudgetAlertRepository
@@ -135,4 +136,18 @@ object AppModule {
     // parser is a future milestone -- adding it here (and nowhere else) is
     // meant to be the whole job once it exists.
     fun provideSmsParsers(): List<SmsParser> = listOf(MpesaSmsParser())
+
+    // Not cached as a singleton -- cheap to build, and used from both the
+    // bulk-import ViewModel and MpesaSmsReceiver (which may construct it from
+    // a cold app process with no Activity around), so it must not depend on
+    // anything Activity-scoped.
+    fun provideSmsTransactionImporter(context: Context): SmsTransactionImporter =
+        SmsTransactionImporter(
+            provideSmsParsers(),
+            provideTransactionRepository(context),
+            provideCategoryRepository(context),
+            provideMerchantCategorizer(context),
+            provideBudgetAlertChecker(context),
+            context.applicationContext
+        )
 }
