@@ -65,6 +65,79 @@ class DashboardViewModelTest {
     }
 
     @Test
+    fun `yesterdaySpending sums only yesterday's expenses`() = runTest {
+        val today = LocalDate.now()
+        val yesterday = today.minusDays(1)
+        val transactions = listOf(
+            tx(1, 300.0, TransactionType.EXPENSE, date = yesterday.atTime(9, 0)),
+            tx(2, 700.0, TransactionType.EXPENSE, date = yesterday.atTime(20, 0)),
+            tx(3, 999.0, TransactionType.INCOME, date = yesterday.atTime(12, 0)),
+            tx(4, 50.0, TransactionType.EXPENSE, date = today.atTime(9, 0))
+        )
+        val viewModel = DashboardViewModel(
+            FakeTransactionRepository(transactions),
+            FakeCategoryRepository(listOf(food)),
+            FakeBudgetRepository()
+        )
+        val job = launch { viewModel.uiState.collect { } }
+        advanceUntilIdle()
+
+        assertEquals(1000.0, viewModel.uiState.value.yesterdaySpending, 0.001)
+
+        job.cancel()
+    }
+
+    @Test
+    fun `sevenDayAverage divides the week's expense total by 7 regardless of how many days had spending`() = runTest {
+        val today = LocalDate.now()
+        // Only two of the last seven days have any expense at all.
+        val transactions = listOf(
+            tx(1, 700.0, TransactionType.EXPENSE, date = today.atTime(9, 0)),
+            tx(2, 700.0, TransactionType.EXPENSE, date = today.minusDays(3).atTime(9, 0)),
+            // Outside the 7-day window -- must not count.
+            tx(3, 5000.0, TransactionType.EXPENSE, date = today.minusDays(10).atTime(9, 0))
+        )
+        val viewModel = DashboardViewModel(
+            FakeTransactionRepository(transactions),
+            FakeCategoryRepository(listOf(food)),
+            FakeBudgetRepository()
+        )
+        val job = launch { viewModel.uiState.collect { } }
+        advanceUntilIdle()
+
+        assertEquals(200.0, viewModel.uiState.value.sevenDayAverage, 0.001)
+
+        job.cancel()
+    }
+
+    @Test
+    fun `sevenDaySparkline has one point per day, oldest first, zero-filled on days with no spending`() = runTest {
+        val today = LocalDate.now()
+        val transactions = listOf(
+            tx(1, 150.0, TransactionType.EXPENSE, date = today.atTime(9, 0)),
+            tx(2, 80.0, TransactionType.EXPENSE, date = today.minusDays(6).atTime(9, 0))
+        )
+        val viewModel = DashboardViewModel(
+            FakeTransactionRepository(transactions),
+            FakeCategoryRepository(listOf(food)),
+            FakeBudgetRepository()
+        )
+        val job = launch { viewModel.uiState.collect { } }
+        advanceUntilIdle()
+
+        val sparkline = viewModel.uiState.value.sevenDaySparkline
+        assertEquals(7, sparkline.size)
+        assertEquals(today.minusDays(6), sparkline.first().date)
+        assertEquals(today, sparkline.last().date)
+        assertEquals(80.0, sparkline.first().amount, 0.001)
+        assertEquals(150.0, sparkline.last().amount, 0.001)
+        // Days with no transactions at all must still produce a zero-amount point, not be skipped.
+        assertEquals(0.0, sparkline[3].amount, 0.001)
+
+        job.cancel()
+    }
+
+    @Test
     fun `monthIncome sums only this month's income`() = runTest {
         val month = YearMonth.now()
         val transactions = listOf(

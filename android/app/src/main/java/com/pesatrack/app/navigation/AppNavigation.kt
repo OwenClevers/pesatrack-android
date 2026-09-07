@@ -16,6 +16,7 @@ import com.pesatrack.app.core.SecurityPreferences
 import com.pesatrack.app.presentation.backup.BackupScreen
 import com.pesatrack.app.presentation.budgets.BudgetsScreen
 import com.pesatrack.app.presentation.categories.CategoriesScreen
+import com.pesatrack.app.presentation.dailyspending.DailySpendingScreen
 import com.pesatrack.app.presentation.dashboard.DashboardScreen
 import com.pesatrack.app.presentation.lock.LockScreen
 import com.pesatrack.app.presentation.mpesa.MpesaImportScreen
@@ -105,6 +106,16 @@ fun AppNavigation() {
 
         composable(Screen.Transactions.route) {
             TransactionsScreen(navController)
+        }
+
+        composable(
+            route = Screen.DailySpending.route,
+            arguments = listOf(navArgument("date") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val date = backStackEntry.arguments?.getString("date")
+                ?.let { java.time.LocalDate.parse(it) }
+                ?: java.time.LocalDate.now()
+            DailySpendingScreen(navController, date)
         }
 
         composable(

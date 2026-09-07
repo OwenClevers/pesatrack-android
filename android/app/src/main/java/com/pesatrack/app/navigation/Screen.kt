@@ -16,6 +16,11 @@ sealed class Screen(val route: String) {
         fun route(transactionId: Long) = "edit_transaction/$transactionId"
     }
     object Transactions : Screen("transactions")
+    object DailySpending : Screen("daily_spending/{date}") {
+        // date is an ISO-8601 LocalDate (yyyy-MM-dd) -- the day the 30-day
+        // bar chart should open with selected.
+        fun route(date: java.time.LocalDate) = "daily_spending/$date"
+    }
     object TransactionDetails : Screen("transaction_details/{transactionId}") {
         fun route(transactionId: Long) = "transaction_details/$transactionId"
     }
