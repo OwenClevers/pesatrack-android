@@ -82,10 +82,24 @@ class MpesaSmsParser : SmsParser {
         // ampersands, hyphens and slashes.
         const val NAME_CHARS = """[A-Za-z0-9 .,'&/-]+?"""
 
+        // A phone number in a counterparty position may have its middle digits
+        // masked for privacy (e.g. "0717***822") -- allowing '*' alongside
+        // digits here, rather than \d only, is what lets that still match as
+        // the optional phone-number tail instead of falling through to (and
+        // breaking) the name group, which can't contain '*'.
+        const val PHONE_OR_MASKED = """[\d*]{9,12}"""
+
         // "QGH7XXXXX1 Confirmed. Ksh500.00 sent to JOHN KAMAU 0712345678 on 4/9/26 at 2:15 PM. ..."
+        // "QGH7XXXXX1 Confirmed. Ksh360.00 sent to EVOPAY LIMITED for account 0299...;W7026 on 4/9/26 ..."
+        // The "for account" clause mirrors PAID_REGEX's -- paybill-style
+        // "sent to" payments (EVOPAY, SASAPAY, Lipa na KCB, fuel cards, etc.)
+        // reference an account/reference string that can contain characters
+        // (';', '#', '_') outside NAME_CHARS, so it needs the same \S+
+        // treatment as an explicit optional clause rather than letting the
+        // name group try (and fail) to absorb it.
         val SENT_REGEX = Regex(
             """^(?<code>[A-Z0-9]{9,12})\s+Confirmed\.?\s*Ksh(?<amount>$AMOUNT_VALUE)\s+sent to\s+""" +
-                """(?<name>$NAME_CHARS)(?:\s+\d{9,12})?\s+$DATE_TIME_SUFFIX""",
+                """(?<name>$NAME_CHARS)(?:\s+$PHONE_OR_MASKED)?\s*(?:for account\s+\S+\s+)?$DATE_TIME_SUFFIX""",
             RegexOption.IGNORE_CASE
         )
 
@@ -104,21 +118,38 @@ class MpesaSmsParser : SmsParser {
             RegexOption.IGNORE_CASE
         )
 
+        // "QGH7WTD0001 Confirmed.on 4/9/26 at 2:15 PMWithdraw Ksh1,000.00 from 252343 - JOHN AGENT DOE New M-PESA balance is Ksh500.00. ..."
+        // An older/alternate agent-withdrawal template: the date/time clause
+        // comes before "Withdraw" instead of after, often with no space at
+        // all around "Confirmed." or the meridiem -- hence the \s* (not \s+)
+        // at both of those joins. Anchoring the name on the more specific
+        // "New M-PESA balance" (rather than a bare "New") avoids truncating a
+        // real agent/shop name that happens to start with "New".
+        val WITHDRAW_DATE_FIRST_REGEX = Regex(
+            """^(?<code>[A-Z0-9]{9,12})\s+Confirmed\.?\s*$DATE_TIME_SUFFIX\s*Withdraw\s+""" +
+                """Ksh(?<amount>$AMOUNT_VALUE)\s+from\s+(?:agent\s+)?\d+\s*-\s*(?<name>$NAME_CHARS)\s+New M-PESA balance""",
+            RegexOption.IGNORE_CASE
+        )
+
         // "QGH7XXXXX5 Confirmed. You have received Ksh1,500.00 from JANE DOE 0722334455 on 4/9/26 at 9:00 AM. ..."
+        // "QGH7XXXXX5 Confirmed.You have received Ksh500.00 from JANE DOE 0722***455 on 4/9/26 at 9:00 AM ..."
         val RECEIVED_REGEX = Regex(
             """^(?<code>[A-Z0-9]{9,12})\s+Confirmed\.?\s*You have received\s+Ksh(?<amount>$AMOUNT_VALUE)\s+""" +
-                """from\s+(?<name>$NAME_CHARS)(?:\s+\d{9,12})?\s+$DATE_TIME_SUFFIX""",
+                """from\s+(?<name>$NAME_CHARS)(?:\s+$PHONE_OR_MASKED)?\s+$DATE_TIME_SUFFIX""",
             RegexOption.IGNORE_CASE
         )
 
         // "QGH7XXXXX6 Confirmed. You bought Ksh100.00 of Airtime on 4/9/26 at 2:15 PM. ..."
+        // "QGH7XXXXX6 confirmed.You bought Ksh200.00 of airtime for 254711431737 on 4/9/26 at 2:15 PM. ..."
         // No counterparty name in this message shape, so the "name" group
         // captures the fixed literal word "Airtime" itself rather than free-form
         // text -- keeps toTransaction()'s group handling identical for every
         // pattern instead of needing a separate fallback path for name-less ones.
+        // The optional "for <phone>" clause covers buying airtime for a
+        // different number than the account holder's own.
         val AIRTIME_REGEX = Regex(
             """^(?<code>[A-Z0-9]{9,12})\s+Confirmed\.?\s*You bought\s+Ksh(?<amount>$AMOUNT_VALUE)\s+of\s+""" +
-                """(?<name>Airtime)\s+$DATE_TIME_SUFFIX""",
+                """(?<name>Airtime)(?:\s+for\s+\d+)?\s+$DATE_TIME_SUFFIX""",
             RegexOption.IGNORE_CASE
         )
 
@@ -134,6 +165,29 @@ class MpesaSmsParser : SmsParser {
         val REVERSAL_REGEX = Regex(
             """^(?<code>[A-Z0-9]{9,12})\s+Confirmed\.?\s*Reversal of\s+Ksh(?<amount>$AMOUNT_VALUE)\s+""" +
                 """from\s+(?<name>$NAME_CHARS)\s+is complete\s+$DATE_TIME_SUFFIX""",
+            RegexOption.IGNORE_CASE
+        )
+
+        // "QGH7REV0010 confirmed. Reversal of transaction QGH7REV0009 has been successfully
+        // reversed on 4/9/26 at 2:15 PM and Ksh500.00 is credited to/debited from your
+        // M-PESA account. New M-PESA account balance is Ksh1,500.00."
+        // A different reversal template than REVERSAL_REGEX above: it references
+        // the *original* transaction's code rather than a counterparty, and can
+        // either credit or debit the account depending on the direction of the
+        // reversal, hence two patterns with fixed, opposite types. "name" is the
+        // fixed literal "Reversal", like Airtime/Fuliza M-PESA, since there's no
+        // person/business to key it to.
+        val REVERSAL_CREDIT_REGEX = Regex(
+            """^(?<code>[A-Z0-9]{9,12})\s+Confirmed\.?\s*(?<name>Reversal) of transaction\s+[A-Z0-9]{9,12}\s+""" +
+                """has been successfully reversed\s+$DATE_TIME_SUFFIX\s+and\s+Ksh(?<amount>$AMOUNT_VALUE)\s+""" +
+                """is credited to your M-PESA account""",
+            RegexOption.IGNORE_CASE
+        )
+
+        val REVERSAL_DEBIT_REGEX = Regex(
+            """^(?<code>[A-Z0-9]{9,12})\s+Confirmed\.?\s*(?<name>Reversal) of transaction\s+[A-Z0-9]{9,12}\s+""" +
+                """has been successfully reversed\s+$DATE_TIME_SUFFIX\s+and\s+Ksh(?<amount>$AMOUNT_VALUE)\s+""" +
+                """is debited from your M-PESA account""",
             RegexOption.IGNORE_CASE
         )
 
@@ -165,9 +219,12 @@ class MpesaSmsParser : SmsParser {
             PatternSpec(REFUND_REGEX, TransactionType.INCOME),
             PatternSpec(RECEIVED_REGEX, TransactionType.INCOME),
             PatternSpec(REVERSAL_REGEX, TransactionType.INCOME),
+            PatternSpec(REVERSAL_CREDIT_REGEX, TransactionType.INCOME),
+            PatternSpec(REVERSAL_DEBIT_REGEX, TransactionType.EXPENSE),
             PatternSpec(FULIZA_REGEX, TransactionType.EXPENSE),
             PatternSpec(AIRTIME_REGEX, TransactionType.EXPENSE),
             PatternSpec(WITHDRAW_REGEX, TransactionType.EXPENSE),
+            PatternSpec(WITHDRAW_DATE_FIRST_REGEX, TransactionType.EXPENSE),
             PatternSpec(POCHI_REGEX, TransactionType.EXPENSE),
             PatternSpec(PAID_REGEX, TransactionType.EXPENSE),
             PatternSpec(SENT_REGEX, TransactionType.EXPENSE)

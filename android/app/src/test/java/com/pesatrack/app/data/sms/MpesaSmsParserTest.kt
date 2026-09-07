@@ -359,4 +359,122 @@ class MpesaSmsParserTest {
 
         assertNull(parser.parse(message))
     }
+
+    @Test
+    fun `received money with a masked phone number is parsed correctly`() {
+        val message = "QGH7MSK0013 Confirmed.You have received Ksh500.00 from REUBEN MUGAMBI " +
+            "0717***822 on 4/9/26 at 9:45 PM  New M-PESA balance is Ksh3,875.39."
+
+        val result = parser.parse(message)
+
+        assertEquals("REUBEN MUGAMBI", result?.counterparty)
+        assertEquals(500.00, result?.amount)
+        assertEquals(TransactionType.INCOME, result?.type)
+    }
+
+    @Test
+    fun `sent to a paybill with a for-account reference is parsed as expense`() {
+        // The account reference contains characters ('#', ';', '_') outside
+        // NAME_CHARS -- previously unparseable for exactly that reason.
+        val message = "QGH7ACC0014 Confirmed. Ksh360.00 sent to EVOPAY LIMITED for account " +
+            "02993537026011016233453300;W7026 on 21/8/26 at 4:30 PM New M-PESA balance is Ksh680.35."
+
+        val result = parser.parse(message)
+
+        assertEquals(
+            ParsedSmsTransaction(
+                transactionCode = "QGH7ACC0014",
+                amount = 360.00,
+                counterparty = "EVOPAY LIMITED",
+                timestamp = LocalDateTime.of(2026, 8, 21, 16, 30),
+                type = TransactionType.EXPENSE
+            ),
+            result
+        )
+    }
+
+    @Test
+    fun `sent to a paybill reference with a hash character is parsed as expense`() {
+        val message = "QGH7ACC0015 Confirmed. Ksh100.00 sent to Lipa na KCB for account " +
+            "7914255#kdp871t on 6/8/26 at 5:14 PM New M-PESA balance is Ksh2,099.89."
+
+        val result = parser.parse(message)
+
+        assertEquals("Lipa na KCB", result?.counterparty)
+    }
+
+    @Test
+    fun `agent withdrawal with the date-time clause before Withdraw is parsed as expense`() {
+        // An older/alternate template: date/time comes before "Withdraw", with
+        // no space around "Confirmed." or the meridiem.
+        val message = "QGH7WTD0016 Confirmed.on 7/2/26 at 8:24 PMWithdraw Ksh1,000.00 from " +
+            "252343 - GIPPS Enter KIKUYU CANTEEN New M-PESA balance is Ksh372.07."
+
+        val result = parser.parse(message)
+
+        assertEquals(
+            ParsedSmsTransaction(
+                transactionCode = "QGH7WTD0016",
+                amount = 1000.00,
+                counterparty = "GIPPS Enter KIKUYU CANTEEN",
+                timestamp = LocalDateTime.of(2026, 2, 7, 20, 24),
+                type = TransactionType.EXPENSE
+            ),
+            result
+        )
+    }
+
+    @Test
+    fun `reversal that credits the account is parsed as income`() {
+        val message = "QGH7RVC0017 Confirmed. Reversal of transaction QGH7RVC0000 has been " +
+            "successfully reversed  on 2/7/26  at 10:53 AM and Ksh100.00 is credited to your " +
+            "M-PESA account. New M-PESA account balance is Ksh20,815.13."
+
+        val result = parser.parse(message)
+
+        assertEquals(
+            ParsedSmsTransaction(
+                transactionCode = "QGH7RVC0017",
+                amount = 100.00,
+                counterparty = "Reversal",
+                timestamp = LocalDateTime.of(2026, 7, 2, 10, 53),
+                type = TransactionType.INCOME
+            ),
+            result
+        )
+    }
+
+    @Test
+    fun `reversal that debits the account is parsed as expense`() {
+        val message = "QGH7RVD0018 confirmed. Reversal of transaction QGH7RVD0000 has been " +
+            "successfully reversed  on 17/11/25  at 4:55 PM and Ksh500.00 is debited from your " +
+            "M-PESA account. New M-PESA account balance is Ksh3,925.92."
+
+        val result = parser.parse(message)
+
+        assertEquals(TransactionType.EXPENSE, result?.type)
+        assertEquals(500.00, result?.amount)
+    }
+
+    @Test
+    fun `airtime bought for another number is parsed as expense`() {
+        val message = "QGH7AIR0019 confirmed.You bought Ksh200.00 of airtime for 254711431737 " +
+            "on 3/5/26 at 6:07 PM.New balance is Ksh5,196.26."
+
+        val result = parser.parse(message)
+
+        assertEquals(
+            ParsedSmsTransaction(
+                transactionCode = "QGH7AIR0019",
+                amount = 200.00,
+                // Case-insensitive matching captures the literal text as it
+                // appeared in the message, not the pattern's "Airtime" casing --
+                // some real messages use lowercase "airtime".
+                counterparty = "airtime",
+                timestamp = LocalDateTime.of(2026, 5, 3, 18, 7),
+                type = TransactionType.EXPENSE
+            ),
+            result
+        )
+    }
 }

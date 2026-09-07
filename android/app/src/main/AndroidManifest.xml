@@ -5,6 +5,9 @@
     <!-- Optional: powers M-Pesa SMS import. The app is fully usable without it,
          including on devices (e.g. Chromebooks) with no telephony hardware. -->
     <uses-permission android:name="android.permission.READ_SMS" />
+    <!-- Optional: lets MpesaSmsReceiver auto-import a transaction the moment
+         its confirmation SMS arrives, instead of only on a manual re-scan. -->
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
     <uses-feature
         android:name="android.hardware.telephony"
         android:required="false" />
@@ -34,6 +37,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- android:permission restricts who can send this broadcast to us to
+             holders of BROADCAST_SMS (the system only), so a third-party app
+             can't spoof a fake SMS_RECEIVED broadcast at us. -->
+        <receiver
+            android:name=".data.sms.MpesaSmsReceiver"
+            android:exported="true"
+            android:permission="android.permission.BROADCAST_SMS">
+            <intent-filter>
+                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
