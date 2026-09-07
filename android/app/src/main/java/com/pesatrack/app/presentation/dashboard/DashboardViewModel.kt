@@ -57,12 +57,21 @@ class DashboardViewModel(
     ): DashboardUiState {
         val today = LocalDate.now()
 
-        // "Today" always means the real calendar day, regardless of which
-        // month is being browsed elsewhere on this screen.
-        val todaySpending = filter {
-            it.type == TransactionType.EXPENSE &&
-                    it.transactionDate.toLocalDate() == today
-        }.sumOf { it.amount }
+        // "Today", the sparkline and its comparison line all anchor to the
+        // real calendar day, regardless of which month is being browsed
+        // elsewhere on this screen.
+        val expensesByDay = filter { it.type == TransactionType.EXPENSE }
+            .groupBy { it.transactionDate.toLocalDate() }
+            .mapValues { (_, txns) -> txns.sumOf { it.amount } }
+
+        val last7Days = (6 downTo 0).map { today.minusDays(it.toLong()) }
+        val sevenDaySparkline = last7Days.map { day ->
+            DailySparklinePoint(day, expensesByDay[day] ?: 0.0)
+        }
+
+        val todaySpending = expensesByDay[today] ?: 0.0
+        val yesterdaySpending = expensesByDay[today.minusDays(1)] ?: 0.0
+        val sevenDayAverage = sevenDaySparkline.sumOf { it.amount } / sevenDaySparkline.size
 
         val monthIncome = filter {
             it.type == TransactionType.INCOME &&
@@ -90,6 +99,9 @@ class DashboardViewModel(
         return DashboardUiState(
             month = month,
             todaySpending = todaySpending,
+            yesterdaySpending = yesterdaySpending,
+            sevenDayAverage = sevenDayAverage,
+            sevenDaySparkline = sevenDaySparkline,
             monthIncome = monthIncome,
             remainingBudget = remainingBudget,
             recentTransactions = recentTransactions,

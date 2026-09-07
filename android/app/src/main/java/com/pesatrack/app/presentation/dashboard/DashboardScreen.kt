@@ -38,6 +38,7 @@ import com.pesatrack.app.ui.theme.components.MoneyCard
 import com.pesatrack.app.ui.theme.components.MonthSelector
 import com.pesatrack.app.ui.theme.components.PesaBottomBar
 import com.pesatrack.app.ui.theme.components.TransactionRow
+import java.time.LocalDate
 
 @Composable
 fun DashboardScreen(navController: NavController) {
@@ -96,8 +97,17 @@ fun DashboardScreen(navController: NavController) {
             ) {
                 MoneyCard(
                     todaySpending = uiState.todaySpending,
+                    yesterdaySpending = uiState.yesterdaySpending,
+                    sevenDayAverage = uiState.sevenDayAverage,
+                    sevenDaySparkline = uiState.sevenDaySparkline,
                     monthIncome = uiState.monthIncome,
                     remainingBudget = uiState.remainingBudget,
+                    onTodaySpendingClick = {
+                        navController.navigate(Screen.DailySpending.route(LocalDate.now()))
+                    },
+                    onSparklineDayClick = { date ->
+                        navController.navigate(Screen.DailySpending.route(date))
+                    },
                     onRemainingBudgetClick = { navController.navigate(Screen.Budgets.route) }
                 )
 
